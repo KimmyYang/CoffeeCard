@@ -1,0 +1,38 @@
+@startuml
+
+package com.kf.coffeecard{
+    class GameProxyService
+    class GameFactory{
+        -static GameFactory mInstance
+        +void createGame();
+    }
+    class Game{
+        +enum GameType{
+            BRIDGE,
+            BLACK_JACK,
+            SEVENS,
+            LIAR;}
+    }
+    class BridgeGame
+    class CardSet
+    class Player
+    class GameRule
+
+    BridgeGame --|> Game
+    Game <--* GameFactory
+
+    BridgeGame <--o CardSet
+    GameProxyService --> GameFactory
+
+    GameProxyService <--o Player
+    GameProxyService <--o GameRule
+}
+
+package com.kf.coffeecard.activity{
+    class MainActivity
+    class SettingActivity
+    MainActivity --> SettingActivity
+    SettingActivity --> GameProxyService
+}
+
+@enduml

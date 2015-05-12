@@ -1,0 +1,9 @@
+./activity/SettingActivity.java
+./BridgeGame.java
+./Card.java
+./CardSet.java
+./Game.java
+./GameFactory.java
+./GameRule.java
+./MainActivity.java
+./Player.java
