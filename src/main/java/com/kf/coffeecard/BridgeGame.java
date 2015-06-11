@@ -1,29 +1,35 @@
-package com.kf.coffeecard;
-import android.content.Intent;
-import android.util.Log;
-import com.kf.coffeecard.activity.BridgeGameActivity;
-import java.util.Vector;
-
 /**
  * Created by kimmy on 15/4/6.
  */
+package com.kf.coffeecard;
+import android.util.Log;
+import com.kf.coffeecard.Card.CardSuit;
+import com.kf.coffeecard.Card.CardPoint;
+import java.util.ArrayList;
+import java.util.Vector;
+import android.util.Pair;
+import java.util.TreeMap;
+
 public class BridgeGame extends Game{
 
+    private TreeMap<Integer,Pair<CardPoint,CardSuit>> mWieghtMap = null;
     private final String TAG = "BridgeGame";
-    private CardSet mCardSet;
 
     public  BridgeGame(GameRule rule , Player players[]){
         super(rule , players);
+        Log.i(TAG,"Created BridgeGame");
     }
 
     public void startGame(){
         /*
         start bridge game ...
          */
+        Log.i(TAG,"Start Bridge Game ..");
         Deal();
+        ArrangeCard();
     }
     private void Deal(){
-        Log.d(TAG,"Deal");
+        Log.i(TAG,"Dealing Cards ..");
         if(!mGameRule.IsGameRuleValid()){
             Log.e(TAG,"Invalid game rule ...");
             return;
@@ -32,7 +38,7 @@ public class BridgeGame extends Game{
         int numOfPlayer = mPlayers.length;
 
         Vector<CardSet> cardSets = new Vector<CardSet>();
-        Log.d(TAG,"NumberOfCardSet = "+getGameRule().getNumberOfCardSet());
+        //Log.d(TAG,"NumberOfCardSet = "+getGameRule().getNumberOfCardSet());
         for(int i=0; i<getGameRule().getNumberOfCardSet();++i){
             CardSet cardSet = new CardSet();
             cardSet.Shuffle();
@@ -52,4 +58,126 @@ public class BridgeGame extends Game{
         }
 
     }
+    private void ArrangeCard(){
+        Log.i(TAG,"Arranging Cards ..");
+        //TreeMap<Integer,Card> treeMap = new TreeMap<Integer,Card>();
+        ArrayList<Card> cardList = new ArrayList<>();
+        boolean matchSuit = false;
+        for(int i=0;i < mPlayers.length; ++i){
+        //for(int i=0;i < 1; ++i){
+            Vector<Card> cards = mPlayers[i].getCards();
+            //Log.d(TAG,"vector size = "+cards.size());
+            cardList.clear();//init
+            //printCard(cards);
+            for(int j=0;j<cards.size();++j){
+
+                matchSuit = false;
+                Card card = cards.elementAt(j);
+
+                if(cardList.size() == 0)cardList.add(card);
+                else{
+                    //Log.d(TAG,"list size = "+cardList.size());
+                    for(int index=0;index<cardList.size();++index){
+                        Card _card = cardList.get(index);
+
+                        if(_card.getSuit().compareTo(card.getSuit()) < 0){
+                            cardList.add(index,card);break;
+                        }
+                        else if(_card.getSuit().compareTo(card.getSuit()) == 0){
+                            if(card.getPoint()==CardPoint.ACE){
+                                cardList.add(index,card);break;
+                            }
+                            else if(_card.getPoint().compareTo(card.getPoint()) < 0 && _card.getPoint()!=CardPoint.ACE){
+                                cardList.add(index,card);break;
+                            }
+                            matchSuit = true;
+                        }
+                        else if(_card.getSuit().compareTo(card.getSuit()) > 0 && matchSuit && index<cardList.size()-1){
+                            cardList.add(index,card);break;
+                        }
+
+                        if(index==cardList.size()-1){
+                            cardList.add(index+1,card);
+                            break;
+                        }
+                    }
+                }
+            }
+            if(cards.size() != cardList.size()){
+                Log.wtf(TAG,"ArrangeCard : Vector size not equal to List size");
+            }
+            ArrangeByColor(cardList);
+            copyListToVector(cards, cardList);
+            printCard(cards);
+        }
+    }
+
+    private void copyListToVector(Vector<Card> cardsVector, ArrayList<Card> cardsList){
+
+        cardsVector.clear();
+        for(int i=0;i<cardsList.size();++i){
+            Card card = cardsList.get(i);
+            cardsVector.add(card);
+        }
+    }
+
+    private void ArrangeByColor(ArrayList<Card> cardList){
+
+        for(int index=0;index<cardList.size();++index){
+
+            if(cardList.get(index).getSuit() == CardSuit.DIAMOND){
+                Card card = cardList.remove(index);
+                cardList.add(card);
+                if(index != cardList.size()-1){
+                    --index;
+                }
+            }
+            else if(cardList.get(index).getSuit() == CardSuit.CLUB){
+                break;
+            }
+
+        }
+    }
+    /*
+    create the card arrange weight map,
+    TreeMap will sort the value by key (small -> big)
+    12=KING,11=QUEEN,...1=TWO,0=ACE
+    3=SPADE, 2=HEART, 1=DIAMOND , 0=CLUB
+     */
+    private void initCardWeightMap(){
+
+        int weight = CardSet.TOTAL_CARD - CardSet.TOTAL_CARD_SUIT;//48
+        if(mWieghtMap==null)mWieghtMap = new TreeMap<Integer,Pair<CardPoint,CardSuit>>();
+        mWieghtMap.clear();
+
+        for(int i=CardSet.TOTAL_CARD_POINT;i>1;--i){
+            CardPoint point = CardPoint.values()[i-1];//13
+            for(int j=CardSet.TOTAL_CARD_SUIT;j>0;--j,--weight){
+                CardSuit suit = CardSuit.values()[j-1];
+                mWieghtMap.put(weight,new Pair<CardPoint,CardSuit>(point,suit));
+                //mWieghtMap.equals()
+            }
+        }
+    }
+
+    private void printCard(Vector<Card> cards){
+        if(cards.size()==0)return;
+        Log.d(TAG,"printCard : ");
+        for(int i=0;i<cards.size();++i){
+            Card card = cards.elementAt(i);
+            Log.d(TAG,"point/suit = "+card.getPoint()+"/"+card.getSuit());
+        }
+    }
+/*
+    public Vector<Card> getMyCard(){
+        if(mPlayers.length > 0) {
+            Player player = mPlayers[0];
+            if(player!=null){
+                return player.getCards();
+            }
+        }
+        return null;
+    }
+    */
+
 }

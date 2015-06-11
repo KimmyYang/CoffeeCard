@@ -1,29 +1,31 @@
+/**
+ * Created by kimmy on 15/4/6.
+ */
 package com.kf.coffeecard;
 
 import java.util.Vector;
 import android.util.Log;
 import java.util.Collections;
+import com.kf.coffeecard.Card.CardSuit;
+import com.kf.coffeecard.Card.CardPoint;
 
-/**
- * Created by kimmy on 15/4/6.
- */
+
 public class CardSet {
 
     private final String TAG = "CardSet";
-    final int TOTAL_CARD_POINT = 13;
-    final int TOTAL_CARD_SUIT = 4;
-    final int TOTAL_CARD = TOTAL_CARD_POINT*TOTAL_CARD_SUIT ;
+    public static final int TOTAL_CARD_POINT = 13;
+    public static final int TOTAL_CARD_SUIT = 4;
+    public final static int TOTAL_CARD = TOTAL_CARD_POINT*TOTAL_CARD_SUIT ;
     private Vector<Card> mCardSet;
 
     public  CardSet(){
         mCardSet = new Vector<Card>();
-
-        for(int i=0; i<TOTAL_CARD_POINT; ++i){
-            for(int j=0; j<TOTAL_CARD_SUIT; ++j){
-                Card card = new Card(j,i);
+        int id = 1;
+        for(int i=1; i<=TOTAL_CARD_POINT; ++i){
+            for(int j=1; j<=TOTAL_CARD_SUIT; ++j,++id){
+                Card card = new Card(j,i,id);
                 mCardSet.add(card);
             }
-
         }
         //printCardSet();
         if(mCardSet.size() != TOTAL_CARD){

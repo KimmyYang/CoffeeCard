@@ -1,8 +1,13 @@
 @startuml
 
 package com.kf.coffeecard{
-    class GameProxyService
+    class AbstractService
+    class GameProxyService{
+        -Game mGame
+        +Game GetGameInfo()
+    }
     class GameFactory{
+        -Game mGame
         -static GameFactory mInstance
         +void createGame();
     }
@@ -13,10 +18,18 @@ package com.kf.coffeecard{
             SEVENS,
             LIAR;}
     }
-    class BridgeGame
+    class BridgeGame{
+        -GameType mGameType
+        -GameRule mRule
+        -Player[] mPlayers
+        +void startGame()
+        -void Deal()
+    }
     class CardSet
     class Player
     class GameRule
+
+    GameProxyService --|>AbstractService
 
     BridgeGame --|> Game
     Game <--* GameFactory
@@ -24,15 +37,19 @@ package com.kf.coffeecard{
     BridgeGame <--o CardSet
     GameProxyService --> GameFactory
 
-    GameProxyService <--o Player
-    GameProxyService <--o GameRule
+    Game <--o Player
+    Game <--o GameRule
 }
 
 package com.kf.coffeecard.activity{
     class MainActivity
     class SettingActivity
+    class BridgeGameActivity
+
     MainActivity --> SettingActivity
-    SettingActivity --> GameProxyService
+    SettingActivity <--> GameProxyService:start/bind service
+    SettingActivity --> BridgeGameActivity
+    BridgeGameActivity<--> GameProxyService:bind service
 }
 
 @enduml

@@ -35,7 +35,7 @@ public class SettingActivity extends Activity {
         setContentView(R.layout.activity_setting);
         initSpinner();
 
-        mGameProxyService = new ServiceManager(this, GameProxyService.class, new Handler() {
+        mGameProxyService = new ServiceManager(this, GameProxyService.class, null , new Handler() {
             @Override
             public void handleMessage(Message msg) {
 
@@ -54,7 +54,11 @@ public class SettingActivity extends Activity {
                     intent.putExtra("gametype", mGameType);
                     intent.putExtra("players", mNumPlays);
                     mGameProxyService.start(intent);
+
+                    Intent intent2 = new Intent (getApplicationContext(), BridgeGameActivity.class);
+                    startActivity(intent2);
                 }
+
             }
         });
     }
@@ -62,6 +66,12 @@ public class SettingActivity extends Activity {
     protected void onStart() {
         super.onStart();
         Log.d(TAG,"onStart");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.d(TAG,"onPause");
     }
 
     @Override

@@ -15,6 +15,9 @@ public class GameRule {
     private int mNumberOfPlayerMax;
     private int mNumberOfCardSet;
     private GameType mType;
+    private int mPerPlayerOfCards;
+    private int mTotalCards;
+    final int BASE_PER_PLAYER_CARDS = 13;
 
     public GameRule(String name, GameType type, int numPlayerMin, int numPlayerMax, int numCardSet){
         mName = name;
@@ -22,6 +25,7 @@ public class GameRule {
         mNumberOfPlayerMin = numPlayerMin;
         mNumberOfPlayerMax = numPlayerMax;
         mNumberOfCardSet = numCardSet;
+        createRule();
     }
     public boolean IsGameRuleValid(){
         if(mNumberOfPlayerMin<=0 || mNumberOfPlayerMax<=0 || mNumberOfCardSet<=0){
@@ -33,5 +37,25 @@ public class GameRule {
     public int getNumberOfPlayers(){return mNumberOfPlayerMax;}
     public int getNumberOfCardSet(){return mNumberOfCardSet;}
 
+    private void createRule(){
+        switch (mType){
 
+            case SEVENS:
+            case BRIDGE:
+                mPerPlayerOfCards = BASE_PER_PLAYER_CARDS;
+                mTotalCards = BASE_PER_PLAYER_CARDS*mNumberOfPlayerMax;
+                break;
+            case LIAR:
+                mPerPlayerOfCards = BASE_PER_PLAYER_CARDS*mNumberOfCardSet;
+            default:
+                mPerPlayerOfCards = BASE_PER_PLAYER_CARDS;
+                break;
+        }
+    }
+    public int getPerPlayerOfCards(){
+        return mPerPlayerOfCards;
+    }
+    public int getTotalCards(){
+        return mTotalCards;
+    }
 }

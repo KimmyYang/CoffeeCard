@@ -22,10 +22,6 @@
         </activity>
 
         <service android:name=".GameProxyService">
-            <intent-filter>
-                 <action android:name=".GameProxyService .BIND" />
-                        <category android:name="android.intent.category.DEFAULT"/>
-                    </intent-filter>
         </service>
 
         <activity

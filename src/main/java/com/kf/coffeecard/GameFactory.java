@@ -11,20 +11,15 @@ public class GameFactory {
     private static final String TAG = "GameFactory";
     private static GameFactory mInstance;
     private static Game mGame;
-    private GameType mGameType;
-    private Player[] mPlayers;
-    private GameRule mRule;
 
-    public GameFactory(GameRule rule, Player players[]){
-        mRule = rule;
-        mGameType = rule.getGameType();
-        mPlayers = players;
+    public GameFactory(){
+        Log.i(TAG,"Created GameFactory");
     }
-    public static void createGame(GameRule rule , Player players[]){
-        Log.i(TAG,"createGame");
+    public static Game createGame(GameRule rule , Player players[]){
+
         if(mInstance != null)throw new RuntimeException("GameFactory.createGame should be call once.");
 
-        mInstance = new GameFactory(rule, players);
+        mInstance = new GameFactory();
 
         switch (rule.getGameType()){
             case BRIDGE:
@@ -38,5 +33,10 @@ public class GameFactory {
                 break;
         }
         Log.i(TAG,"createGame end");
+        return mGame;
+    }
+    public static GameFactory getInstance(){
+        if(mInstance == null)throw new RuntimeException("GameFactory instance is null");
+        return mInstance;
     }
 }

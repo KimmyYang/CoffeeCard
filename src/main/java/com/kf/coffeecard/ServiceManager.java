@@ -21,11 +21,13 @@ public class ServiceManager {
     final String TAG = "ServiceManager";
     private Class<? extends AbstractService> mServiceClass;
     private Context mActivity;
-    private boolean mIsBound;
+    private boolean mIsBound = false;
     private Messenger mService = null;
     private Handler mIncomingHandler = null;
+    private Handler mInnerHandler = null;
     private final Messenger mMessenger = new Messenger(new IncomingHandler());
 
+    public static final int SM_SERVICE_ATTACHED = 2000;
 
 
     private class IncomingHandler extends Handler {
@@ -33,7 +35,13 @@ public class ServiceManager {
         public void handleMessage(Message msg) {
             if (mIncomingHandler != null) {
                 Log.i(TAG, "Incoming message. Passing to handler: "+msg);
-                mIncomingHandler.handleMessage(msg);
+                switch (msg.what){
+                    case AbstractService.MSG_REGISTER_CLIENT_RESP:
+                        Log.i(TAG,"received MSG_REGISTER_CLIENT_RESP");
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -42,6 +50,14 @@ public class ServiceManager {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
             Log.i(TAG, "Attached.");
+            mIsBound = true;
+
+            if(mInnerHandler!=null){//send to inner activity handler
+                Log.i(TAG,"send SM_SERVICE_ATTACHED");
+                mInnerHandler.sendMessage(Message.obtain(null ,SM_SERVICE_ATTACHED ));
+            }
+
+            /* send first register msg to service */
             /*
             try {
                 Message msg = Message.obtain(null, AbstractService.MSG_REGISTER_CLIENT);
@@ -51,6 +67,7 @@ public class ServiceManager {
                 // In this case the service has crashed before we could even do anything with it
             }
             */
+
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -60,11 +77,20 @@ public class ServiceManager {
             Log.i(TAG, "Disconnected.");
         }
     };
+    public void send(Message msg) throws RemoteException {
+        if (mIsBound) {
+            if (mService != null) {
+                mService.send(msg);
+            }
+        }
+    }
 
-    public ServiceManager(Context context, Class<? extends AbstractService> serviceClass, Handler incomingHandler) {
+    public ServiceManager(Context context, Class<? extends AbstractService> serviceClass, Handler innerHandler, Handler incomingHandler) {
         this.mActivity = context;
         this.mServiceClass = serviceClass;
+        this.mInnerHandler = innerHandler;
         this.mIncomingHandler = incomingHandler;
+        mIsBound = false;
 
         if (isRunning()) {
             Log.d(TAG,"isRunning");
@@ -75,12 +101,16 @@ public class ServiceManager {
     public void start(Intent intent) {
         doStartService(intent);
         doBindService(intent);
-        //doBindService();
     }
 
     public void stop() {
         doUnbindService();
         doStopService();
+    }
+
+    public void bind(){
+        Log.i(TAG,"bind Service");
+        doBindService();
     }
 
     /**
@@ -102,14 +132,6 @@ public class ServiceManager {
         return false;
     }
 
-    public void send(Message msg) throws RemoteException {
-        if (mIsBound) {
-            if (mService != null) {
-                mService.send(msg);
-            }
-        }
-    }
-
     private void doStartService(Intent intent) {
         mActivity.startService(intent);
     }
@@ -121,13 +143,10 @@ public class ServiceManager {
     private void doBindService(Intent intent) {
         Log.d(TAG,"doBindService , intent :"+intent);
         mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        //mActivity.bindService(intent, mConnection, 0);
-        mIsBound = true;
+        //mIsBound = true;
     }
     private void doBindService() {
         mActivity.bindService(new Intent(mActivity, mServiceClass), mConnection, Context.BIND_AUTO_CREATE);
-        //mActivity.bindService(new Intent(mActivity, mServiceClass), mConnection, 0);
-        mIsBound = true;
     }
 
     private void doUnbindService() {
@@ -148,5 +167,9 @@ public class ServiceManager {
             mIsBound = false;
             Log.i(TAG, "Unbinding.");
         }
+    }
+
+    public boolean isBound(){
+        return mIsBound;
     }
 }
