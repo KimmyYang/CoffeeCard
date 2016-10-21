@@ -1,0 +1,63 @@
+@startuml
+
+package com.kf.coffeecard{
+
+    class Game{
+        -Player[] mPlayers
+        -GameRule mRule
+        +enum GameType{
+            BRIDGE,
+            BLACK_JACK,
+            SEVENS,
+            LIAR;}
+        +void startGame()
+        -void Deal()
+    }
+    class BridgeGame{
+
+    }
+    class CardSet
+    class Player
+    class BridgePlayer
+    class GameRule
+
+    BridgeGame --|> Game
+
+    BridgeGame <--o CardSet
+
+    Game <--o Player
+    Game <--o GameRule
+
+
+
+    BridgePlayer --|> Player
+}
+
+package com.kf.coffeecard.service{
+    class BridgeGameService{
+        -BridgeGame mGame
+        +Game GetGameInfo()
+    }
+    BridgeGameService --> BridgeGame
+}
+
+package com.kf.coffeecard.activity{
+    class MainActivity
+    class SettingActivity
+    class BridgeGameActivity{
+        -PlayerFragment[] mPlayerFragments
+    }
+
+    MainActivity --> SettingActivity
+    SettingActivity --> BridgeGameActivity
+    BridgeGameActivity<--> BridgeGameService:bind service
+}
+
+package com.kf.coffeecard.fragment{
+    class PlayerFragment{
+        -Player mPlayer
+    }
+    BridgeGameActivity <---> PlayerFragment
+}
+
+@enduml

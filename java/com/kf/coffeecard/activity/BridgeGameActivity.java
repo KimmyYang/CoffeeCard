@@ -1,26 +1,28 @@
 package com.kf.coffeecard.activity;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.Handler;
+import android.os.Message;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.Context;
 
-import com.kf.coffeecard.CardSet;
 import com.kf.coffeecard.Game;
-import com.kf.coffeecard.GameRule;
-import com.kf.coffeecard.Card;
-import com.kf.coffeecard.GameProxyService;
 import com.kf.coffeecard.R;
-import com.kf.coffeecard.ServiceManager;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-
-import java.util.Vector;
+import com.kf.coffeecard.fragment.PlayerFragment;
+import com.kf.coffeecard.service.BridgeGameService;
 
 
 public class BridgeGameActivity extends Activity {
@@ -29,51 +31,47 @@ public class BridgeGameActivity extends Activity {
     final int DISPALY_GAME_TIME_DELAY = 2000;
     //final int MAX_CARD_PER_PLAYER = 3;//fake to test
     private ImageView mSplashIv;
-    private ImageView[] mCardImageViews;
-    private ImageView[] mBackImageViews;
-    private ServiceManager mGameProxyService;
+    private PlayerFragment[] mPlayerFragments = null;
     private Handler mHandler = new Handler();
     private HandlerThread mThread = null;
-    private Messenger mReplyMessager = new Messenger(new ReplyHandler());
     private Game mGame = null;
 
-    private Handler mInnerHandler = new Handler() {
+    private Messenger mClient = null;
+    private Messenger mService = null;
+
+    private class ClientHandler extends Handler{
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case ServiceManager.SM_SERVICE_ATTACHED:
-                    Log.i(TAG, "Received SM_SERVICE_ATTACHED");
-                    sendGameInfoMsg();
+        public void handleMessage(Message msg){
+            Log.d(TAG,"handleMessage msg = "+msg.what);
+            switch (msg.what){
+                case BridgeGameService.EVENT_SERVICE_REGISTER_DONE:
                     mHandler.postDelayed(displayGame , DISPALY_GAME_TIME_DELAY);
                     break;
                 default:
-                    break;
             }
+        }
+
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService = new Messenger(service);
+            mClient = new Messenger(new ClientHandler());
+            Message msg = Message.obtain();
+            msg.what = BridgeGameService.EVENT_SERVICE_REGISTER;
+            msg.replyTo = mClient;
+            try {
+                mService.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
         }
     };
-
-    private class ReplyHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            if (mReplyMessager != null) {
-                Log.i(TAG, "Incoming message. Passing to handler: "+msg);
-                switch (msg.what){
-                    case GameProxyService.GPSERVICE_GET_GAME_INFO_RESP:
-                        Log.i(TAG,"received GPSERVICE_GET_GAME_INFO_RESP");
-                        mGame = (Game)msg.obj;
-                        final GameRule rule  = mGame.getGameRule();
-                        mCardImageViews = new ImageView[rule.getPerPlayerOfCards()];
-                        //mBackImageViews = new ImageView[rule.getTotalCards()-rule.getPerPlayerOfCards()];
-                        //mBackImageViews = new ImageView[rule.getPerPlayerOfCards()];//test
-                        //mBackImageViews = new ImageView[4];//test
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,35 +79,43 @@ public class BridgeGameActivity extends Activity {
         setContentView(R.layout.activity_bridge_game_splash);
         Log.d(TAG,"onCreate");
 
-        mGameProxyService = new ServiceManager(this , GameProxyService.class , mInnerHandler, new Handler(){
-            @Override
-            public void handleMessage(Message msg){
-                switch (msg.what){
-
-                    //case GameProxyService.GPSERVICE_GET_GAME_INFO_RESP:
-                     //   Log.i(TAG,"received GPSERVICE_GET_GAME_INFO_RESP");
-                       // break;
-                    default:
-                        break;
-                }
-
-            }
-        });
-        mGameProxyService.bind();//bind service
+        Intent intent = new Intent(this, BridgeGameService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void initCardImageView(){
-        if(mCardImageViews==null){
-            Log.wtf(TAG,"mCardImageViews is null");
+        if(mPlayerFragments==null){
+            Log.wtf(TAG,"mPlayerFragments is null");
             return;
         }
+        Log.d(TAG,"[initCardImageView] new fragment");
+        //mPlayerFragment = new PlayerFragment();
+        Bundle args = new Bundle();
+        args.putString("kimmy", "A");
+        //mPlayerFragment.setArguments(args);
+
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        //ft.add(R.id.fragment_container, mPlayerFragment);
+        ft.commit();
+        Log.d(TAG,"[initCardImageView] new fragment done");
+/*
+        //PlayerFragment fragment = (PlayerFragment)getFragmentManager().findFragmentById(R.id.playerFagment);
+        //PlayerFragment fragment = PlayerFragment.newInstance("A","B");
+        PlayerFragment fragment = new PlayerFragment();
+        Bundle args = new Bundle();
+        args.putString("kimmy", "A");
+        fragment.setArguments(args);
+*/
 
         //init local var
+/*
         String wt = "iv";
         int cnt = 0;
         int resID = 0;
-
+*/
         /* PLAY 1 (Main player)*/
+/*
         for(int i=0; i<mCardImageViews.length; ++i){
             int ivId = i+1;
             resID = getResources().getIdentifier(wt+ivId,"id",getPackageName());
@@ -140,7 +146,7 @@ public class BridgeGameActivity extends Activity {
         */
     }
     private void setCardImageView(){
-
+/*
         GameRule rule = mGame.getGameRule();
         Vector<Card> cardVector = mGame.getMyCard();
         if(cardVector.size() != rule.getPerPlayerOfCards() ||
@@ -149,8 +155,10 @@ public class BridgeGameActivity extends Activity {
                     "(cardVector size="+cardVector.size()+" mCardImageViews size="+mCardImageViews.length);
             return;
         }
+*/
 
         /* PLAY 1 */
+/*
         String wt = "c";
         for(int i=0; i<cardVector.size(); ++i){
             Card card = cardVector.elementAt(i);
@@ -159,7 +167,7 @@ public class BridgeGameActivity extends Activity {
             Log.d(TAG,"card Name/card id/resID = "+cardName+"/"+card.getId()+"/"+resID);
             mCardImageViews[i].setImageResource(resID);
         }
-
+*/
         /* PLAY 2~4 */
         /*
         for(int i=0;i<mBackImageViews.length;++i){
@@ -175,7 +183,7 @@ public class BridgeGameActivity extends Activity {
             Log.d(TAG,"displayGame");
             setContentView(R.layout.activity_bridge_game);
             initCardImageView();
-            setCardImageView();
+            //setCardImageView();
         }
     };
 
@@ -184,26 +192,11 @@ public class BridgeGameActivity extends Activity {
         Log.d(TAG,"onStart");
         mSplashIv = (ImageView) findViewById(R.id.iv_bridge_game_splash);
         mSplashIv.setImageResource(R.drawable.bridge_game_splash);
-/*
-        mThread = new HandlerThread("BGThread");
-        mThread.start();
-        mThreadHandler = new Handler(mThread.getLooper());
-        */
     }
+
     protected void onResume(){
         super.onResume();
         Log.d(TAG,"onResume");
-    }
-
-    private void sendGameInfoMsg(){
-        try {
-            Log.i(TAG,"send GPSERVICE_GET_GAME_INFO_REQ");
-            Message msg = Message.obtain(null , GameProxyService.GPSERVICE_GET_GAME_INFO_REQ);
-            msg.replyTo = mReplyMessager;
-            mGameProxyService.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

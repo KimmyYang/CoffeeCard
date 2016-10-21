@@ -14,9 +14,8 @@ import android.widget.Spinner;
 import android.os.Message;
 import android.content.Intent;
 import android.widget.EditText;
-import com.kf.coffeecard.GameProxyService;
+
 import com.kf.coffeecard.R;
-import com.kf.coffeecard.ServiceManager;
 import com.kf.coffeecard.Game.GameType;
 import com.kf.coffeecard.Game;
 
@@ -27,7 +26,6 @@ public class SettingActivity extends Activity {
     private GameType mGameType;
     private int mNumPlays;
     private String mName;
-    private ServiceManager mGameProxyService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,26 +33,19 @@ public class SettingActivity extends Activity {
         setContentView(R.layout.activity_setting);
         initSpinner();
 
-        mGameProxyService = new ServiceManager(this, GameProxyService.class, null , new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-
-            }
-        });
-
         Button button = (Button) findViewById(R.id.setting_ok_button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (mNumPlays > 0) {
                     Log.d(TAG, "start the game");
                     mName = getEditText();
-
+                    /*
                     Intent intent = new Intent(getBaseContext(), GameProxyService.class);
                     intent.putExtra("name", mName);
                     intent.putExtra("gametype", mGameType);
                     intent.putExtra("players", mNumPlays);
                     mGameProxyService.start(intent);
-
+                    */
                     Intent intent2 = new Intent (getApplicationContext(), BridgeGameActivity.class);
                     startActivity(intent2);
                 }
@@ -155,11 +146,5 @@ public class SettingActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            mGameProxyService.stop();
-        } catch (Throwable t) {
-            Log.e("MainActivity", "Failed to unbind from the service", t);
-        }
-
     }
 }

@@ -6,6 +6,17 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.kf.coffeecard.activity.BridgeGameActivity"
     >
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+    />
+        <!--
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/iv6"
+        android:layout_marginBottom="43dp"
+        -->
+<!--
 
     <ImageView
         android:layout_width="wrap_content"
@@ -109,6 +120,7 @@
         android:layout_alignParentStart="true"
         android:clickable="true"
         android:layout_marginStart="210dp"/>
+-->
 <!--
 
     <ImageView

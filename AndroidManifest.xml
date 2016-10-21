@@ -21,13 +21,16 @@
             android:label="@string/title_activity_setting" >
         </activity>
 
-        <service android:name=".GameProxyService">
-        </service>
-
         <activity
             android:name=".activity.BridgeGameActivity"
             android:label="@string/title_activity_bridge_game" >
         </activity>
+
+        <service
+            android:name=".service.BridgeGameService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
