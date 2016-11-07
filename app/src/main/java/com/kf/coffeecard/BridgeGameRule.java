@@ -48,11 +48,11 @@ public class BridgeGameRule extends GameRule {
         int bidTrick=trick, bidSuit=suit;
         ArrayList<Integer> weightList = mWeightMap.get(player.getID());
         if(DBG)printWeight(weightList);
+        Log.d(GameConstants.TAG,"bidContract: before id["+player.getID()+"] = trick = "+trick+", suit = "+suit);
         for(int i=0; i< weightList.size(); ++i){
             int weight =  weightList.get(i);
             int orgSuit = i+1;
             if(orgSuit > suit && isBidSuit(weight)){
-                bidTrick++;
                 bidSuit = orgSuit;
                 isChange = true;
             }
@@ -65,7 +65,7 @@ public class BridgeGameRule extends GameRule {
         if(DBG && isChange){
             BridgeGame.printCard(player.getCards());
         }
-        Log.d(GameConstants.TAG,"bidContract: bidTrick["+player.getID()+"] = "+bidTrick+", bidSuit = "+bidSuit);
+        Log.d(GameConstants.TAG,"bidContract: after id["+player.getID()+"] = "+bidTrick+", bidSuit = "+bidSuit);
         Bundle bundle = new Bundle();
         bundle.putInt(GameConstants.CONTRACT_TRICK,bidTrick);
         bundle.putInt(GameConstants.CONTRACT_SUIT, bidSuit);
