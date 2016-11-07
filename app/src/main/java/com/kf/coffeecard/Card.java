@@ -9,6 +9,7 @@ import java.util.Map;
 
 
 public class Card {
+
     public enum CardSuit{
         CLUB(1),
         DIAMOND(2),
@@ -25,8 +26,25 @@ public class Card {
         private CardSuit(int value){
             this.value = value;
         }
+        public int getValue(){
+            return value;
+        }
         public static CardSuit valueOf(int index){
             return map.get(index);
+        }
+        public static String IndexToString(int index){
+            CardSuit suit = valueOf(index);
+            if(suit == CLUB){
+                return "Club";
+            }else if(suit == DIAMOND){
+                return "Diamond";
+            }else if(suit == HEART){
+                return "Heart";
+            }else if(suit == SPADE) {
+                return "Spade";
+            }else {
+                return null;
+            }
         }
     }
     public enum CardPoint{
@@ -59,6 +77,7 @@ public class Card {
         }
     }
     private final String TAG = "Card";
+    public static final int CARD_SUIT_COUNT = 4;
     private CardSuit mSuit;
     private CardPoint mPoint;
     private int mId;

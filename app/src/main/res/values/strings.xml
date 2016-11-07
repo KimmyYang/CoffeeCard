@@ -6,6 +6,10 @@
     <string name="title_activity_setting">SettingActivity</string>
     <string name="game_type">Game Type</string>
     <string name="num_of_player">Number of Player</string>
+    <string name="start_button">Start</string>
+    <string name="pass_button">PASS</string>
+    <string name="yes_button">確定</string>
+    <string name="no_button">取消</string>
 
     <string-array name="num_players_list">
         <item>"請選擇"</item>

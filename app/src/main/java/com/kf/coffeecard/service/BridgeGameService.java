@@ -11,6 +11,8 @@ import android.os.HandlerThread;
 
 import android.os.RemoteException;
 import android.util.Log;
+
+import com.kf.coffeecard.BridgeGame;
 import com.kf.coffeecard.Game;
 import com.kf.coffeecard.GameConstants;
 
@@ -33,7 +35,7 @@ public class BridgeGameService extends Service {
         }
         @Override
         public void handleMessage(Message msg) {
-            Log.d(TAG,"handleMessage msg = "+msg.what);
+            Log.d(GameConstants.TAG,"BridgeGameService: handleMessage = "+msg.what);
 
             switch (msg.what){
                 case GameConstants.EVENT_SERVICE_REGISTER:
@@ -46,9 +48,13 @@ public class BridgeGameService extends Service {
                         }
                     }
                     break;
-                case GameConstants.EVENT_SERVICE_START_GAME:
+                case GameConstants.EVENT_SERVICE_INIT_GAME:
                     mGame = Game.getGame();
-                    mGame.startGame();
+                    mGame.initGame();
+                    break;
+                case GameConstants.EVENT_SERVICE_BID_CONTRACT:
+                    ((BridgeGame)mGame).bidContract();
+                    break;
                 default:
             }
         }

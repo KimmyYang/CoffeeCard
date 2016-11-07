@@ -1,8 +1,10 @@
 package com.kf.coffeecard.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Messenger;
@@ -11,8 +13,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ImageView;
@@ -21,6 +28,8 @@ import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.Context;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 
 import com.kf.coffeecard.BridgeGame;
 import com.kf.coffeecard.Game;
@@ -35,14 +44,19 @@ import java.util.Objects;
 
 public class BridgeGameActivity extends Activity {
 
+    final boolean DBG = true;
+    final boolean VDBG = false;
     final String TAG = "BridgeGameActivity";
     final int DISPALY_GAME_TIME_DELAY = 1000;
 
     private ImageView mSplashIv;
     private ArrayList<PlayerFragment> mPlayerFragList = null;
+    //use in call king dialog
+    private Spinner mContractTrickSpinner = null;
+    private Spinner mContractSuitSpinner = null;
+
     private Handler mHandler = new ClientHandler();
     private Game mGame = null;
-
     private Messenger mClient = null;
     private Messenger mService = null;
 
@@ -52,11 +66,14 @@ public class BridgeGameActivity extends Activity {
             Log.d(TAG,"handleMessage msg = "+msg.what);
             switch (msg.what){
                 case GameConstants.EVENT_SERVICE_REGISTER_DONE:
-                    startGame();
+                    initGame();
                     mHandler.sendMessageDelayed(obtainMessage(GameConstants.EVENT_CLIENT_DISPLAY_GAME), DISPALY_GAME_TIME_DELAY);
                     break;
                 case GameConstants.EVENT_CLIENT_DISPLAY_GAME:
                     displayGame();
+                    break;
+                case GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE:
+                    startGame();
                     break;
                 default:
             }
@@ -99,14 +116,98 @@ public class BridgeGameActivity extends Activity {
         mGame = BridgeGame.createGame(bundle);
     }
 
-    private void startGame(){
-        sendMessage(GameConstants.EVENT_SERVICE_START_GAME);
+    //arrange, deal card
+    private void initGame(){
+        sendMessage(GameConstants.EVENT_SERVICE_INIT_GAME);
     }
 
+    //display card view
     private void displayGame(){
-        Log.d(TAG,"displayGame");
+        Log.d(TAG, "displayGame");
         setContentView(R.layout.activity_bridge_game);
         setCardImageView();
+        mHandler.sendEmptyMessageDelayed(GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE, 1000);
+    }
+
+    //show start button and starting the game
+    private void startGame(){
+        //init start button
+        Button startBtn = new Button(this);
+        startBtn.setText(R.string.start_button);
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.bridge_game_relative_layout);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(300,300);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        startBtn.setLayoutParams(params);
+        relativeLayout.addView(startBtn);
+
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showContractDialog();
+            }
+        });
+    }
+
+    private void showContractDialog(){
+        Log.d(GameConstants.TAG, "showContractDialog");
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View view = layoutInflater.inflate(R.layout.bid_contract_dialog, null);
+        updateContractSpinner(view);//update spinner
+        AlertDialog.Builder contractDialog = new AlertDialog.Builder(this);
+        contractDialog.setView(view);
+        contractDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                if(VDBG)Log.d(GameConstants.TAG, "YES");
+                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT);
+            }
+        });
+        contractDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                //nothing to do
+            }
+        });
+        //pass
+        contractDialog.setNegativeButton(R.string.pass_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                if(VDBG)Log.d(GameConstants.TAG, "PASS");
+            }
+        });
+        contractDialog.show();
+    }
+
+    private void updateContractSpinner(View view){
+        Log.d(GameConstants.TAG,"updateContractSpinner");
+        mContractTrickSpinner = (Spinner)view.findViewById(R.id.contract_trick_spinner);
+        mContractSuitSpinner = (Spinner)view.findViewById(R.id.contract_suit_spinner);
+        mContractTrickSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, ((BridgeGame) mGame).getContractTrickList()));
+        mContractSuitSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, ((BridgeGame) mGame).getContractSuitList()));
+
+        //suit
+        mContractSuitSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(GameConstants.TAG, "mContractSuitSpinner: position = " + position);
+                ((BridgeGame) mGame).setContractSuit(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        //trick
+        mContractTrickSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(GameConstants.TAG,"mContractTrickSpinner: position = "+position);
+                ((BridgeGame) mGame).setmContractTrick(position+1);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     private void setCardImageView(){

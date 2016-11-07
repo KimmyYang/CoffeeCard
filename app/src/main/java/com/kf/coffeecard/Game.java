@@ -24,9 +24,10 @@ public abstract class Game {
     protected Player mPlayers[];
     protected GameRule mGameRule;
 
-    public abstract void startGame();
+    public abstract void initGame();
     protected abstract void Deal();
     protected abstract void ArrangeCard();
+    protected abstract void WeightCalculated();
 
     public Game(GameRule rule , Player player[]) {
         mGameRule = rule;

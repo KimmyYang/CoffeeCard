@@ -64,7 +64,8 @@
         android:inputType="textPersonName"
         android:ems="10"
         android:id="@+id/editText_name"
-        android:layout_below="@+id/textView_name"/>
+        android:layout_below="@+id/textView_name"
+        android:text="Kimmy" />
 
 
 

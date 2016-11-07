@@ -9,7 +9,6 @@ import com.kf.coffeecard.Game.GameType;
 
 public class GameRule {
 
-
     private String mName;
     private int mNumberOfPlayerMin;
     private int mNumberOfPlayerMax;
@@ -46,7 +45,6 @@ public class GameRule {
 
     private void createRule(){
         switch (mType){
-
             case SEVENS:
             case BRIDGE:
                 mNumberOfCardSet = 1;

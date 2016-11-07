@@ -16,41 +16,64 @@ public class BridgeGame extends Game{
     private TreeMap<Integer,Pair<CardPoint,CardSuit>> mWieghtMap = null;
     private static final String TAG = "BridgeGame";
 
+    //using in call king
+    public static final int TOTAL_TRICKS  = 7;
+    public static final int TOTAL_CONTRACT_SUIT  = 5;
+    ArrayList<String> mContractTrickList = null;
+    ArrayList<String> mContractSuitList = null;
+    private int mContractSuit;
+    private int mContractTrick;
 
     private BridgeGame(GameRule rule , Player players[]){
         super(rule , players);
-        Log.i(TAG,"Created BridgeGame");
+        Log.i(TAG, "Created BridgeGame");
+        initContractList();
+    }
+
+    private void initContractList(){
+        mContractTrickList = new ArrayList<String>();
+        mContractSuitList = new ArrayList<String>();
+        //suit(club, diamond, heart, spade, no king)
+        for(int i=0; i < TOTAL_CONTRACT_SUIT; ++i){
+            String suit = CardSuit.IndexToString(i);
+            mContractSuitList.add(suit!=null?suit:"No King");
+        }
+        //trick(1~7)
+        for(int i=1; i<= TOTAL_TRICKS; ++i){
+            mContractTrickList.add(Integer.toString(i));
+        }
     }
 
     public static Game createGame(Bundle bundle){
-        Log.d(TAG,"createGame");
+        Log.d(TAG, "createGame");
         if(mInstance == null){
             String name = bundle.getString(GameConstants.PLAYER_NAME);
             int numPlayers = bundle.getInt(GameConstants.NUMBER_OF_PLAYER);
             GameType type = GameType.values()[bundle.getInt(GameConstants.GAME_TYPE)];
-            mInstance = new BridgeGame(new GameRule(type, numPlayers), createPlayers(numPlayers, name));
+            mInstance = new BridgeGame(new BridgeGameRule(type, numPlayers), createPlayers(numPlayers, name));
         }
         return mInstance;
     }
 
     private static Player[] createPlayers(int numPlayers, String name){
-        Player[] players = new Player[numPlayers];
+        Player[] players = new BridgeGamePlayer[numPlayers];
         //1st player
-        players[0] = new Player(name, 0);
+        players[0] = new BridgeGamePlayer(name, 0);
         //other players
         for(int i=1; i<numPlayers ; ++i){//1, 2, 3, ..numPlayers
-            players[i] = new Player(Integer.toString(i), i);
+            players[i] = new BridgeGamePlayer(Integer.toString(i), i);
         }
         return players;
     }
 
-    public void startGame(){
+    public void initGame(){
         /*
         start bridge game ...
          */
         Log.i(TAG,"Start Bridge Game ..");
         Deal();
         ArrangeCard();
+        WeightCalculated();
     }
 
     protected void Deal(){
@@ -63,13 +86,13 @@ public class BridgeGame extends Game{
         int numOfPlayer = mPlayers.length;
 
         Vector<CardSet> cardSets = new Vector<CardSet>();
-        Log.d(TAG,"Deal: NumberOfCardSet = "+getGameRule().getNumberOfCardSet());
+        Log.d(TAG, "Deal: NumberOfCardSet = " + getGameRule().getNumberOfCardSet());
         for(int i=0; i<getGameRule().getNumberOfCardSet();++i){
             CardSet cardSet = new CardSet();
             cardSet.Shuffle();
             cardSets.add(cardSet);
         }
-        Log.d(TAG,"Deal: cardSetsSize = "+cardSets.size());
+        Log.d(TAG, "Deal: cardSetsSize = " + cardSets.size());
         for(int i=0;i<cardSets.size();++i){
             CardSet cardSet = cardSets.get(i);//tmp
 
@@ -132,7 +155,14 @@ public class BridgeGame extends Game{
             }
             ArrangeByColor(cardList);
             copyListToVector(cards, cardList);
-            printCard(cards);
+            //printCard(cards);
+        }
+    }
+
+    protected void WeightCalculated(){
+        Log.d(GameConstants.TAG, "WeightCalculated");
+        for(Player player:mPlayers){
+            ((BridgeGameRule)mGameRule).weightCalculated(player);
         }
     }
 
@@ -184,28 +214,42 @@ public class BridgeGame extends Game{
         }
     }
 
-    private void printCard(Vector<Card> cards){
-        if(cards.size()==0)return;
-        Log.d(TAG,"printCard : ");
-        for(int i=0;i<cards.size();++i){
-            Card card = cards.elementAt(i);
-            Log.d(TAG,"point/suit = "+card.getPoint()+"/"+card.getSuit());
-        }
-    }
-
-    public void test(){
-
-    }
-/*
-    public Vector<Card> getMyCard(){
-        if(mPlayers.length > 0) {
-            Player player = mPlayers[0];
-            if(player!=null){
-                return player.getCards();
+    public void bidContract(){
+        Log.d(GameConstants.TAG,"bidContract: original contract = ["+mContractTrick+","+mContractSuit+"]");
+        for(Player player:mPlayers){
+            Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player, mContractTrick, mContractSuit);
+            if(player.getID() >0 && bundle != null){//just need to update player 2~4
+                mContractTrick = bundle.getInt(GameConstants.CONTRACT_TRICK,mContractTrick);
+                mContractSuit = bundle.getInt(GameConstants.CONTRACT_SUIT,mContractSuit);
+                Log.d(GameConstants.TAG,"bidContract: final contract = ["+mContractTrick+","+mContractSuit+"]");
             }
         }
-        return null;
     }
-    */
 
+    //using in call king
+    public ArrayList<String> getContractTrickList(){
+        return mContractTrickList;
+    }
+
+    public ArrayList<String> getContractSuitList(){
+        return mContractSuitList;
+    }
+
+    public void setContractSuit(int suit){
+        mContractSuit = suit;
+    }
+
+    public void setmContractTrick(int trick){
+        mContractTrick = trick;
+    }
+
+    //test
+    public static void printCard(Vector<Card> cards){
+        if(cards.size()==0)return;
+        Log.d(TAG, "printCard : ");
+        for(int i=0;i<cards.size();++i){
+            Card card = cards.elementAt(i);
+            Log.d(GameConstants.TAG,"point/suit = "+card.getPoint()+"/"+card.getSuit());
+        }
+    }
 }
