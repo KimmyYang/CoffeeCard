@@ -26,7 +26,6 @@ public abstract class Game {
     protected GameRule mGameRule;
 
     public abstract void initGame();
-    public abstract void initPlayerInfo(int index,TextView view);
     protected abstract void Deal();
     protected abstract void ArrangeCard();
     protected abstract void WeightCalculated();

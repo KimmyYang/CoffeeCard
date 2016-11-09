@@ -21,6 +21,7 @@ public class BridgeGameRule extends GameRule {
     private final int HIGH_WEIGHT = 3;
     private final int MEDIUM_WEIGHT = 2;
     private final int BASIC_WEIGHT = 1;
+    public static final int BRIDGE_GAME_SCORE = 20000;
 
     HashMap<Integer, ArrayList<Integer>> mWeightMap = new HashMap<Integer, ArrayList<Integer>>();
 

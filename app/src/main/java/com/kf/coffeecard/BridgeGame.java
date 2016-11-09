@@ -8,7 +8,6 @@ import com.kf.coffeecard.Card.CardPoint;
 import java.util.ArrayList;
 import java.util.Vector;
 import android.os.Bundle;
-import android.widget.TextView;
 
 public class BridgeGame extends Game{
 
@@ -23,6 +22,7 @@ public class BridgeGame extends Game{
     ArrayList<String> mContractSuitList = null;
     private int mContractSuit;
     private int mContractTrick;
+    private boolean mIsContractChange = false;
 
     //create game , rule and player
     public static Game createGame(Bundle bundle){
@@ -48,7 +48,7 @@ public class BridgeGame extends Game{
     }
 
     private BridgeGame(GameRule rule , Player players[]){
-        super(rule , players);
+        super(rule, players);
         Log.i(TAG, "Created BridgeGame");
         initContractList();
     }
@@ -57,9 +57,9 @@ public class BridgeGame extends Game{
         mContractTrickList = new ArrayList<String>();
         mContractSuitList = new ArrayList<String>();
         //suit(club, diamond, heart, spade, no king)
-        for(int i=0; i < TOTAL_CONTRACT_SUIT; ++i){
+        for(int i=1; i <= TOTAL_CONTRACT_SUIT; ++i){
             String suit = CardSuit.IndexToString(i);
-            mContractSuitList.add(suit!=null?suit:"No King");
+            mContractSuitList.add(suit!=null?suit:GameConstants.NO_KING);
         }
         //trick(1~7)
         for(int i=1; i<= TOTAL_TRICKS; ++i){
@@ -77,12 +77,6 @@ public class BridgeGame extends Game{
         WeightCalculated();
     }
 
-    //init textView for each player
-    public void initPlayerInfo(int index,TextView view){
-        if(index < mPlayers.length){
-            mPlayers[index].initPlayerInfo(view);
-        }
-    }
 
     protected void Deal(){
         Log.i(TAG, "Dealing Cards ..");
@@ -175,7 +169,6 @@ public class BridgeGame extends Game{
     }
 
     private void copyListToVector(Vector<Card> cardsVector, ArrayList<Card> cardsList){
-
         cardsVector.clear();
         for(int i=0;i<cardsList.size();++i){
             Card card = cardsList.get(i);
@@ -204,15 +197,22 @@ public class BridgeGame extends Game{
     public void bidContract(){
         if(DBG)Log.d(GameConstants.TAG,"bidContract: original contract = ["+mContractTrick+","+mContractSuit+"]");
         ((BridgeGamePlayer)getMainPlayer()).updateContract(mContractTrick, mContractSuit);
+        int trick = mContractTrick; int suit = mContractSuit;
         for(Player player:mPlayers){
-            Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player, mContractTrick, mContractSuit);
+            Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player, trick, suit);
             if(player.getID() >0 && bundle != null){//just need to update player 2~4
-                mContractTrick = bundle.getInt(GameConstants.CONTRACT_TRICK,mContractTrick);
-                mContractSuit = bundle.getInt(GameConstants.CONTRACT_SUIT,mContractSuit);
-                ((BridgeGamePlayer) player).updateContract(mContractTrick, mContractSuit);//update self contract
-                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+mContractTrick+","+mContractSuit+"]");
+                trick = bundle.getInt(GameConstants.CONTRACT_TRICK,mContractTrick);
+                suit = bundle.getInt(GameConstants.CONTRACT_SUIT,mContractSuit);
+                ((BridgeGamePlayer) player).updateContract(trick, suit);//update self contract
+                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+trick+","+suit+"]");
             }
         }
+        mIsContractChange = mContractTrick!=trick || mContractSuit!=suit;
+        Log.d(GameConstants.TAG, "bidContract: mIsContractChange = " + mIsContractChange);
+    }
+
+    public boolean isContractChange(){
+        return mIsContractChange;
     }
 
     protected Player getMainPlayer(){
@@ -221,6 +221,14 @@ public class BridgeGame extends Game{
             return mPlayers[0];
         }
         return new Player(Integer.toString(0),0);
+    }
+
+    //update contract spinner list
+    public boolean isValidContract(int trick, int suit){
+        if(suit < mContractSuit && trick < mContractTrick){
+            return false;
+        }
+        return true;
     }
 
     //using in call king
@@ -236,7 +244,7 @@ public class BridgeGame extends Game{
         mContractSuit = suit;
     }
 
-    public void setmContractTrick(int trick){
+    public void setContractTrick(int trick){
         mContractTrick = trick;
     }
 

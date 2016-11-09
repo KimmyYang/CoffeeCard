@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 
-public class BridgeGameActivity extends Activity {
+public class BridgeGameActivity extends Activity implements PlayerFragment.OnFragmentInteractionListener{
 
     final boolean DBG = true;
     final boolean VDBG = false;
@@ -63,6 +63,11 @@ public class BridgeGameActivity extends Activity {
     private Messenger mClient = null;
     private Messenger mService = null;
 
+    @Override
+    public void updatePlayerInfoDone(String info) {
+
+    }
+
     private class ClientHandler extends Handler{
         @Override
         public void handleMessage(Message msg){
@@ -79,11 +84,13 @@ public class BridgeGameActivity extends Activity {
                     startGame();
                     break;
                 case GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE:
-                    //update fragment
+                    updatePlayerInfo();
+                    break;
                 default:
             }
         }
     }
+
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -130,7 +137,6 @@ public class BridgeGameActivity extends Activity {
     private void displayGame(){
         Log.d(TAG, "displayGame");
         setContentView(R.layout.activity_bridge_game);
-        initPlayerInfo();//init player's textView
         setCardImageView();//init cards imageView
         mHandler.sendEmptyMessageDelayed(GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE, 1000);
     }
@@ -152,6 +158,15 @@ public class BridgeGameActivity extends Activity {
                 showContractDialog();
             }
         });
+    }
+
+    private void updatePlayerInfo(){
+        for(PlayerFragment fragment:mPlayerFragList){
+            fragment.updatePlayerInfoToView();
+        }
+        if(((BridgeGame) mGame).isContractChange()){
+            //showContractDialog();
+        }
     }
 
     private void showContractDialog(){
@@ -179,6 +194,8 @@ public class BridgeGameActivity extends Activity {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (VDBG) Log.d(GameConstants.TAG, "PASS");
+
+                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT);
             }
         });
         contractDialog.show();
@@ -196,7 +213,7 @@ public class BridgeGameActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(GameConstants.TAG, "mContractSuitSpinner: position = " + position);
-                ((BridgeGame) mGame).setContractSuit(position);
+                ((BridgeGame) mGame).setContractSuit(position+1);
             }
 
             @Override
@@ -209,7 +226,7 @@ public class BridgeGameActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(GameConstants.TAG, "mContractTrickSpinner: position = " + position);
                 //position start from 0 .. so need to increase one
-                ((BridgeGame) mGame).setmContractTrick(position + 1);
+                ((BridgeGame) mGame).setContractTrick(position + 1);
             }
 
             @Override

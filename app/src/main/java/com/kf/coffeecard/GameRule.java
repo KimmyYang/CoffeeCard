@@ -9,7 +9,6 @@ import com.kf.coffeecard.Game.GameType;
 
 public class GameRule {
 
-    private String mName;
     private int mNumberOfPlayerMin;
     private int mNumberOfPlayerMax;
     private int mNumberOfCardSet;
@@ -18,8 +17,11 @@ public class GameRule {
     private int mTotalCards;
     final int BASE_PER_PLAYER_CARDS = 13;
 
+    final static int DEFAULT_GAME_SCORE = 20000;
+    private static int GAME_SCORE = DEFAULT_GAME_SCORE;
+
     public GameRule(String name, GameType type, int numPlayerMin, int numPlayerMax, int numCardSet){
-        mName = name;
+        //mName = name;
         mType = type;
         mNumberOfPlayerMin = numPlayerMin;
         mNumberOfPlayerMax = numPlayerMax;
@@ -50,6 +52,7 @@ public class GameRule {
                 mNumberOfCardSet = 1;
                 mPerPlayerOfCards = BASE_PER_PLAYER_CARDS;
                 mTotalCards = BASE_PER_PLAYER_CARDS*mNumberOfPlayerMax;
+                GAME_SCORE = BridgeGameRule.BRIDGE_GAME_SCORE;
                 break;
             case LIAR:
                 mPerPlayerOfCards = BASE_PER_PLAYER_CARDS*mNumberOfCardSet;
@@ -63,5 +66,8 @@ public class GameRule {
     }
     public int getTotalCards(){
         return mTotalCards;
+    }
+    public static int getGameScore(){
+        return GAME_SCORE;
     }
 }

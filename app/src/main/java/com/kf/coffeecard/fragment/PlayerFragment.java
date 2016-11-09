@@ -166,7 +166,6 @@ public class PlayerFragment extends Fragment {
         }else{
             textParams = new FrameLayout.LayoutParams(500,300);
             if(index == 1){
-                //textParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,300);
                 mText.setRotation(90);
                 textParams.setMargins(150, 0, 0, 0);//left,top,right,bottom
                 textParams.gravity=Gravity.CENTER;
@@ -182,16 +181,15 @@ public class PlayerFragment extends Fragment {
             }
             mText.setLayoutParams(textParams);
         }
-        updatePlayerInfo("Player : "+mPlayer.getName());
-        //updatePlayerInfo("1:SPADE / 20000000");
+        updatePlayerInfoToView();
     }
 
     public void setPlayer(Player player){
         mPlayer = player;
     }
 
-    public void updatePlayerInfo(String info){
-        mText.setText(info);
+    public void updatePlayerInfoToView(){
+        mText.setText(mPlayer.getPlayerInfo());
     }
 
     @Override
@@ -200,14 +198,7 @@ public class PlayerFragment extends Fragment {
         Bundle bundle = getArguments();
         Log.d(TAG,"[onActivityCreated] bundle = "+bundle);
         if (bundle != null) {
-            Log.d(TAG,"para1 = "+bundle.getString("kimmy"));
-        }
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            Log.d(TAG, "para1 = " + bundle.getString("kimmy"));
         }
     }
 
@@ -215,14 +206,12 @@ public class PlayerFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         Log.d(TAG,"[onAttach]");
-        /*
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-        */
     }
 
     @Override
@@ -243,7 +232,7 @@ public class PlayerFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        public void updatePlayerInfoDone(String info);
     }
 
 }

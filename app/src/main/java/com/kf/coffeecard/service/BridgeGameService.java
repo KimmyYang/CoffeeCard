@@ -2,6 +2,7 @@ package com.kf.coffeecard.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
@@ -15,6 +16,8 @@ import android.util.Log;
 import com.kf.coffeecard.BridgeGame;
 import com.kf.coffeecard.Game;
 import com.kf.coffeecard.GameConstants;
+
+import java.util.Objects;
 
 
 public class BridgeGameService extends Service {
