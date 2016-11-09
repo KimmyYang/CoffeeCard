@@ -20,9 +20,9 @@ public class BridgeGame extends Game{
     public static final int TOTAL_CONTRACT_SUIT  = 5;
     ArrayList<String> mContractTrickList = null;
     ArrayList<String> mContractSuitList = null;
-    private int mContractSuit;
-    private int mContractTrick;
-    private boolean mIsContractChange = false;
+    //final contract
+    private ContractInfo mContractInfo = new ContractInfo();
+    private int mPassCnt = 0;
 
     //create game , rule and player
     public static Game createGame(Bundle bundle){
@@ -194,28 +194,63 @@ public class BridgeGame extends Game{
         }
     }
 
-    public void bidContract(){
-        if(DBG)Log.d(GameConstants.TAG,"bidContract: original contract = ["+mContractTrick+","+mContractSuit+"]");
-        ((BridgeGamePlayer)getMainPlayer()).updateContract(mContractTrick, mContractSuit);
-        int trick = mContractTrick; int suit = mContractSuit;
-        for(Player player:mPlayers){
-            Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player, trick, suit);
-            if(player.getID() >0 && bundle != null){//just need to update player 2~4
-                trick = bundle.getInt(GameConstants.CONTRACT_TRICK,mContractTrick);
-                suit = bundle.getInt(GameConstants.CONTRACT_SUIT,mContractSuit);
-                ((BridgeGamePlayer) player).updateContract(trick, suit);//update self contract
-                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+trick+","+suit+"]");
-            }
+    public void bidContract(int trick, int suit){
+        if(DBG)Log.d(GameConstants.TAG,"bidContract: main player contract = ["+trick+","+suit+"]");
+        //update main player contract
+        if(trick!=0 && suit!=0){
+            ((BridgeGamePlayer)getMainPlayer()).updateContract(trick, suit, false);
+            resetPassCnt();
         }
-        mIsContractChange = mContractTrick!=trick || mContractSuit!=suit;
-        Log.d(GameConstants.TAG, "bidContract: mIsContractChange = " + mIsContractChange);
+        else {
+            increasePassCnt();
+        }
+        //update final contract
+        if(!mContractInfo.isContractChange || (trick!=0 && suit!=0)){
+            mContractInfo.updateContract(trick, suit, false);
+        }
+        //update other player contract
+        for(Player player:mPlayers){
+            if(mContractInfo.isPass && ((BridgeGamePlayer) player).getContractInfo().isContractChange){
+                Log.d(GameConstants.TAG,"bidContract: Pass");
+                return;
+            }
+            Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player,mContractInfo.Trick,mContractInfo.Suit);
+
+            if(player.getID() > 0 && bundle != null){//just need to update player 2~4
+                if(!bundle.getBoolean(GameConstants.CONTRACT_PASS)){//new contract
+                    mContractInfo.updateContract(bundle.getInt(GameConstants.CONTRACT_TRICK),
+                                                 bundle.getInt(GameConstants.CONTRACT_SUIT),false);
+                    resetPassCnt();
+                }else{
+                    increasePassCnt();
+                }
+                //update self contract
+                ((BridgeGamePlayer) player).updateContract(bundle.getInt(GameConstants.CONTRACT_TRICK),
+                                                           bundle.getInt(GameConstants.CONTRACT_SUIT),
+                                                           bundle.getBoolean(GameConstants.CONTRACT_PASS));
+
+                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+bundle.getInt(GameConstants.CONTRACT_TRICK)+","+bundle.getInt(GameConstants.CONTRACT_SUIT)+"]"+
+                ", Pass = "+bundle.getBoolean(GameConstants.CONTRACT_PASS));
+            }
+            mContractInfo.isPass = (mPassCnt >= (mGameRule.getNumberOfPlayers()-1));
+            Log.d(GameConstants.TAG,"bidContract: isPass = "+mContractInfo.isPass+", "+mContractInfo.Trick+":"+mContractInfo.Suit);
+        }
+        //Log.d(GameConstants.TAG,"mPlayers size = "+mPlayers.length);
     }
 
-    public boolean isContractChange(){
-        return mIsContractChange;
+    private void resetPassCnt(){
+        mPassCnt = 0;
     }
 
-    protected Player getMainPlayer(){
+    private void increasePassCnt(){
+        ++mPassCnt;
+    }
+
+    public ContractInfo getContract(){
+        return mContractInfo;
+    }
+
+    public Player getMainPlayer(){
         //id:0 is the main player
         if(mPlayers.length > 0){
             return mPlayers[0];
@@ -225,7 +260,7 @@ public class BridgeGame extends Game{
 
     //update contract spinner list
     public boolean isValidContract(int trick, int suit){
-        if(suit < mContractSuit && trick < mContractTrick){
+        if(suit < mContractInfo.Suit && trick < mContractInfo.Trick){
             return false;
         }
         return true;
@@ -238,14 +273,6 @@ public class BridgeGame extends Game{
 
     public ArrayList<String> getContractSuitList(){
         return mContractSuitList;
-    }
-
-    public void setContractSuit(int suit){
-        mContractSuit = suit;
-    }
-
-    public void setContractTrick(int trick){
-        mContractTrick = trick;
     }
 
     //test

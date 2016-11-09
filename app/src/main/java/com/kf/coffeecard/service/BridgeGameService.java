@@ -57,9 +57,11 @@ public class BridgeGameService extends Service {
                     break;
                 case GameConstants.EVENT_SERVICE_BID_CONTRACT:
                     try {
-                        bidContract();
+                        bidContract(msg);
                     } catch (RemoteException e) {
                         e.printStackTrace();
+                    } catch (NullPointerException ex){
+                        Log.w(TAG,"ex = "+ex.getMessage());
                     }
                     break;
                 default:
@@ -85,8 +87,11 @@ public class BridgeGameService extends Service {
         //throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    private void bidContract() throws RemoteException {
-        ((BridgeGame)mGame).bidContract();
+    private void bidContract(Message msg) throws RemoteException {
+        Bundle bundle = (Bundle)msg.obj;
+        if(bundle == null)throw new NullPointerException();
+
+        ((BridgeGame)mGame).bidContract(bundle.getInt(GameConstants.CONTRACT_TRICK),bundle.getInt(GameConstants.CONTRACT_SUIT));
         mClient.send(mHandler.obtainMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE));
     }
 }

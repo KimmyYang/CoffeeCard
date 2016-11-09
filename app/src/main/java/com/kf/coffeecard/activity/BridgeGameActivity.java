@@ -33,6 +33,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.kf.coffeecard.BridgeGame;
+import com.kf.coffeecard.ContractInfo;
 import com.kf.coffeecard.Game;
 import com.kf.coffeecard.GameConstants;
 import com.kf.coffeecard.R;
@@ -62,6 +63,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
     private Game mGame = null;
     private Messenger mClient = null;
     private Messenger mService = null;
+    private ContractInfo mMainPlayerContractInfo = new ContractInfo();
 
     @Override
     public void updatePlayerInfoDone(String info) {
@@ -164,8 +166,8 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         for(PlayerFragment fragment:mPlayerFragList){
             fragment.updatePlayerInfoToView();
         }
-        if(((BridgeGame) mGame).isContractChange()){
-            //showContractDialog();
+        if(!((BridgeGame)mGame).getContract().isPass){
+            showContractDialog();
         }
     }
 
@@ -180,7 +182,10 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (DBG) Log.d(GameConstants.TAG, "YES");
-                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT);
+                Bundle bundle = new Bundle();
+                bundle.putInt(GameConstants.CONTRACT_SUIT,mMainPlayerContractInfo.Suit);
+                bundle.putInt(GameConstants.CONTRACT_TRICK,mMainPlayerContractInfo.Trick);
+                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT,(Object)bundle);
             }
         });
         contractDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
@@ -194,12 +199,15 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (VDBG) Log.d(GameConstants.TAG, "PASS");
-
-                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT);
+                Bundle bundle = new Bundle();
+                bundle.putInt(GameConstants.CONTRACT_SUIT,0);
+                bundle.putInt(GameConstants.CONTRACT_TRICK,0);
+                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT,(Object)bundle);
             }
         });
         contractDialog.show();
     }
+
 
     private void updateContractSpinner(View view){
         Log.d(GameConstants.TAG,"updateContractSpinner");
@@ -213,7 +221,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(GameConstants.TAG, "mContractSuitSpinner: position = " + position);
-                ((BridgeGame) mGame).setContractSuit(position+1);
+                mMainPlayerContractInfo.Suit = position + 1;
             }
 
             @Override
@@ -226,7 +234,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(GameConstants.TAG, "mContractTrickSpinner: position = " + position);
                 //position start from 0 .. so need to increase one
-                ((BridgeGame) mGame).setContractTrick(position + 1);
+                mMainPlayerContractInfo.Trick = position + 1;
             }
 
             @Override
@@ -290,7 +298,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         }
     }
 
-    private void sendMessage(int what, Objects obj){
+    private void sendMessage(int what, Object obj){
         Message msg = Message.obtain();
         msg.what = what;
         msg.obj = obj;
@@ -301,7 +309,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         }
     }
 
-    private void sendMessage(int what, int arg1, int arg2, Objects obj){
+    private void sendMessage(int what, int arg1, int arg2, Object obj){
         Message msg = Message.obtain();
         msg.what = what;
         msg.arg1 = arg1;

@@ -4,23 +4,23 @@ package com.kf.coffeecard;
  * Created by KimmyYang on 2016/11/7.
  */
 public class BridgeGamePlayer extends Player {
+    private ContractInfo mContractInfo = new ContractInfo();
+
     public BridgeGamePlayer(String name, int id) {
         super(name, id);
     }
 
-    //self contract
-    private int mContractSuit = 0;
-    private int mContractTrick = 0;
-
     //update self contract
-    public void updateContract(int trick , int suit){
-        mContractSuit = suit;
-        mContractTrick = trick;
+    public void updateContract(int trick , int suit, boolean isPass){
+        mContractInfo.updateContract(trick, suit, isPass);
         updatePlayerInfo(getContractFormat());
     }
     private String getContractFormat(){
-        if(mContractTrick==0 && mContractSuit==0)return GameConstants.CONTRACT_PASS;
-        String suit = Card.CardSuit.IndexToString(mContractSuit);
-        return Integer.toString(mContractTrick)+":"+ (suit!=null?suit:GameConstants.NO_KING);
+        if(mContractInfo.isPass)return GameConstants.CONTRACT_PASS;
+        String suit = Card.CardSuit.IndexToString(mContractInfo.Suit);
+        return Integer.toString(mContractInfo.Trick)+":"+ (suit!=null?suit:GameConstants.NO_KING);
+    }
+    public ContractInfo getContractInfo(){
+        return mContractInfo;
     }
 }

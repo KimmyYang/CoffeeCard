@@ -53,9 +53,10 @@ public class BridgeGameRule extends GameRule {
         for(int i=0; i< weightList.size(); ++i){
             int weight =  weightList.get(i);
             int orgSuit = i+1;
-            if(orgSuit > suit && isBidSuit(weight)){
+            if(orgSuit > suit && isBidSuit(trick,weight)){
                 bidSuit = orgSuit;
                 isChange = true;
+                if(bidTrick==0)++bidTrick;
             }
             else if(orgSuit < suit && isBidTrick(trick, weight)){
                 bidTrick++;
@@ -68,19 +69,22 @@ public class BridgeGameRule extends GameRule {
         }
         Log.d(GameConstants.TAG,"bidContract: after id["+player.getID()+"] = "+bidTrick+", bidSuit = "+bidSuit);
         Bundle bundle = new Bundle();
+        bundle.putBoolean(GameConstants.CONTRACT_PASS,!isChange);
         bundle.putInt(GameConstants.CONTRACT_TRICK,bidTrick);
         bundle.putInt(GameConstants.CONTRACT_SUIT, bidSuit);
         return bundle;
     }
 
-    private boolean isBidSuit(int weight){
-        if(weight >= 8 )return true;
+    private boolean isBidSuit(int trick, int weight){
+        if(weight >= 8 && weight<15 && trick<=2)return true;
+        else if(weight >= 15 && trick<=3)return true;
+        else if(weight >= 20)return true;
         return false;
     }
     private boolean isBidTrick(int trick, int weight){
-        if(weight >= 10 && weight < 13 ){
+        /*if(weight >= 10 && weight < 13 ){
             return true;
-        }
+        }*/
         if(weight < 13){
             if(weight>=10 && trick==1 )return true;//bid 2
             return false;//bid 1

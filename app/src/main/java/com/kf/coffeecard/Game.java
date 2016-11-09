@@ -29,7 +29,7 @@ public abstract class Game {
     protected abstract void Deal();
     protected abstract void ArrangeCard();
     protected abstract void WeightCalculated();
-    protected abstract Player getMainPlayer();
+    public abstract Player getMainPlayer();
 
     public Game(GameRule rule , Player player[]) {
         mGameRule = rule;
