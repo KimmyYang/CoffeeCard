@@ -7,13 +7,13 @@ import com.kf.coffeecard.Card.CardSuit;
 import com.kf.coffeecard.Card.CardPoint;
 import java.util.ArrayList;
 import java.util.Vector;
-import android.util.Pair;
-import java.util.TreeMap;
 import android.os.Bundle;
+import android.widget.TextView;
 
 public class BridgeGame extends Game{
 
-    private TreeMap<Integer,Pair<CardPoint,CardSuit>> mWieghtMap = null;
+    final boolean DBG = true;
+    final boolean VDBG = false;
     private static final String TAG = "BridgeGame";
 
     //using in call king
@@ -24,26 +24,7 @@ public class BridgeGame extends Game{
     private int mContractSuit;
     private int mContractTrick;
 
-    private BridgeGame(GameRule rule , Player players[]){
-        super(rule , players);
-        Log.i(TAG, "Created BridgeGame");
-        initContractList();
-    }
-
-    private void initContractList(){
-        mContractTrickList = new ArrayList<String>();
-        mContractSuitList = new ArrayList<String>();
-        //suit(club, diamond, heart, spade, no king)
-        for(int i=0; i < TOTAL_CONTRACT_SUIT; ++i){
-            String suit = CardSuit.IndexToString(i);
-            mContractSuitList.add(suit!=null?suit:"No King");
-        }
-        //trick(1~7)
-        for(int i=1; i<= TOTAL_TRICKS; ++i){
-            mContractTrickList.add(Integer.toString(i));
-        }
-    }
-
+    //create game , rule and player
     public static Game createGame(Bundle bundle){
         Log.d(TAG, "createGame");
         if(mInstance == null){
@@ -66,6 +47,26 @@ public class BridgeGame extends Game{
         return players;
     }
 
+    private BridgeGame(GameRule rule , Player players[]){
+        super(rule , players);
+        Log.i(TAG, "Created BridgeGame");
+        initContractList();
+    }
+
+    private void initContractList(){
+        mContractTrickList = new ArrayList<String>();
+        mContractSuitList = new ArrayList<String>();
+        //suit(club, diamond, heart, spade, no king)
+        for(int i=0; i < TOTAL_CONTRACT_SUIT; ++i){
+            String suit = CardSuit.IndexToString(i);
+            mContractSuitList.add(suit!=null?suit:"No King");
+        }
+        //trick(1~7)
+        for(int i=1; i<= TOTAL_TRICKS; ++i){
+            mContractTrickList.add(Integer.toString(i));
+        }
+    }
+
     public void initGame(){
         /*
         start bridge game ...
@@ -74,6 +75,13 @@ public class BridgeGame extends Game{
         Deal();
         ArrangeCard();
         WeightCalculated();
+    }
+
+    //init textView for each player
+    public void initPlayerInfo(int index,TextView view){
+        if(index < mPlayers.length){
+            mPlayers[index].initPlayerInfo(view);
+        }
     }
 
     protected void Deal(){
@@ -192,38 +200,27 @@ public class BridgeGame extends Game{
 
         }
     }
-    /*
-    create the card arrange weight map,
-    TreeMap will sort the value by key (small -> big)
-    12=KING,11=QUEEN,...1=TWO,0=ACE
-    3=SPADE, 2=HEART, 1=DIAMOND , 0=CLUB
-     */
-    private void initCardWeightMap(){
-
-        int weight = CardSet.TOTAL_CARD - CardSet.TOTAL_CARD_SUIT;//48
-        if(mWieghtMap==null)mWieghtMap = new TreeMap<Integer,Pair<CardPoint,CardSuit>>();
-        mWieghtMap.clear();
-
-        for(int i=CardSet.TOTAL_CARD_POINT;i>1;--i){
-            CardPoint point = CardPoint.values()[i-1];//13
-            for(int j=CardSet.TOTAL_CARD_SUIT;j>0;--j,--weight){
-                CardSuit suit = CardSuit.values()[j-1];
-                mWieghtMap.put(weight,new Pair<CardPoint,CardSuit>(point,suit));
-                //mWieghtMap.equals()
-            }
-        }
-    }
 
     public void bidContract(){
-        Log.d(GameConstants.TAG,"bidContract: original contract = ["+mContractTrick+","+mContractSuit+"]");
+        if(DBG)Log.d(GameConstants.TAG,"bidContract: original contract = ["+mContractTrick+","+mContractSuit+"]");
+        ((BridgeGamePlayer)getMainPlayer()).updateContract(mContractTrick, mContractSuit);
         for(Player player:mPlayers){
             Bundle bundle = ((BridgeGameRule) mGameRule).bidContract(player, mContractTrick, mContractSuit);
             if(player.getID() >0 && bundle != null){//just need to update player 2~4
                 mContractTrick = bundle.getInt(GameConstants.CONTRACT_TRICK,mContractTrick);
                 mContractSuit = bundle.getInt(GameConstants.CONTRACT_SUIT,mContractSuit);
-                Log.d(GameConstants.TAG,"bidContract: final contract = ["+mContractTrick+","+mContractSuit+"]");
+                ((BridgeGamePlayer) player).updateContract(mContractTrick, mContractSuit);//update self contract
+                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+mContractTrick+","+mContractSuit+"]");
             }
         }
+    }
+
+    protected Player getMainPlayer(){
+        //id:0 is the main player
+        if(mPlayers.length > 0){
+            return mPlayers[0];
+        }
+        return new Player(Integer.toString(0),0);
     }
 
     //using in call king

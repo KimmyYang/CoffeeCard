@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.Context;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.kf.coffeecard.BridgeGame;
 import com.kf.coffeecard.Game;
@@ -37,6 +38,8 @@ import com.kf.coffeecard.GameConstants;
 import com.kf.coffeecard.R;
 import com.kf.coffeecard.fragment.PlayerFragment;
 import com.kf.coffeecard.service.BridgeGameService;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -75,6 +78,8 @@ public class BridgeGameActivity extends Activity {
                 case GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE:
                     startGame();
                     break;
+                case GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE:
+                    //update fragment
                 default:
             }
         }
@@ -125,7 +130,8 @@ public class BridgeGameActivity extends Activity {
     private void displayGame(){
         Log.d(TAG, "displayGame");
         setContentView(R.layout.activity_bridge_game);
-        setCardImageView();
+        initPlayerInfo();//init player's textView
+        setCardImageView();//init cards imageView
         mHandler.sendEmptyMessageDelayed(GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE, 1000);
     }
 
@@ -158,7 +164,7 @@ public class BridgeGameActivity extends Activity {
         contractDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                if(VDBG)Log.d(GameConstants.TAG, "YES");
+                if (DBG) Log.d(GameConstants.TAG, "YES");
                 sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT);
             }
         });
@@ -172,7 +178,7 @@ public class BridgeGameActivity extends Activity {
         contractDialog.setNegativeButton(R.string.pass_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
-                if(VDBG)Log.d(GameConstants.TAG, "PASS");
+                if (VDBG) Log.d(GameConstants.TAG, "PASS");
             }
         });
         contractDialog.show();
@@ -201,9 +207,11 @@ public class BridgeGameActivity extends Activity {
         mContractTrickSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(GameConstants.TAG,"mContractTrickSpinner: position = "+position);
-                ((BridgeGame) mGame).setmContractTrick(position+1);
+                Log.d(GameConstants.TAG, "mContractTrickSpinner: position = " + position);
+                //position start from 0 .. so need to increase one
+                ((BridgeGame) mGame).setmContractTrick(position + 1);
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -211,7 +219,6 @@ public class BridgeGameActivity extends Activity {
     }
 
     private void setCardImageView(){
-
         mPlayerFragList = new ArrayList<PlayerFragment>();
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -227,6 +234,21 @@ public class BridgeGameActivity extends Activity {
             Log.d(TAG,"[initCardImageView] init player "+i+" done");
         }
         fragmentTransaction.commit();
+    }
+
+    private void initPlayerInfo(){
+        /*for(int index=0; index< mGame.getNumberOfPlayer(); ++index){
+            int resId = getResources().getIdentifier("player_info_text_"+(index+1), "id", getPackageName());
+            TextView textView = (TextView)findViewById(resId);
+            if(index == 1){
+                textView.setRotation(90);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(500,300);
+                params.setMargins(50, 300, 0, 0);
+                params.gravity=Gravity.TOP|Gravity.CENTER;
+                textView.setLayoutParams(params);
+            }
+            mGame.initPlayerInfo(index,textView);
+        }*/
     }
 
     protected void onStart(){

@@ -2,6 +2,7 @@ package com.kf.coffeecard;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.util.Objects;
 import java.util.Vector;
@@ -25,9 +26,11 @@ public abstract class Game {
     protected GameRule mGameRule;
 
     public abstract void initGame();
+    public abstract void initPlayerInfo(int index,TextView view);
     protected abstract void Deal();
     protected abstract void ArrangeCard();
     protected abstract void WeightCalculated();
+    protected abstract Player getMainPlayer();
 
     public Game(GameRule rule , Player player[]) {
         mGameRule = rule;

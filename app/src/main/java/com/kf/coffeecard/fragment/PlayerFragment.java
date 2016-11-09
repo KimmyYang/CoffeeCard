@@ -5,14 +5,18 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.kf.coffeecard.Card;
+import com.kf.coffeecard.GameConstants;
 import com.kf.coffeecard.R;
 import com.kf.coffeecard.Player;
 import com.kf.coffeecard.activity.MainActivity;
@@ -35,15 +39,11 @@ public class PlayerFragment extends Fragment {
     private final boolean DBG = true;
     private final boolean VDBG = true;
     private static final String TAG = "PlayerFragment";
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private Player mPlayer = null;
     private ArrayList<ImageView> mCardImageViews = null;
-    private View mView = null;
+    private TextView mText = null;
 
     private OnFragmentInteractionListener mListener;
 
@@ -56,13 +56,9 @@ public class PlayerFragment extends Fragment {
      * @return A new instance of fragment PlayerFragment.
      */
     // TODO: Rename and change types and number of parameters
+
     public static PlayerFragment newInstance(String param1, String param2) {
-        //Log.d(TAG,"[newInstance] param1 = "+param1+", param2 = "+param2);
         PlayerFragment fragment = new PlayerFragment();
-        /*Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);*/
         return fragment;
     }
 
@@ -73,22 +69,24 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG,"[onCreate]");
+        Log.d(TAG, "[onCreate]");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG,"[onCreateView]");
+        Log.d(TAG, "[onCreateView]");
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_player, container, false);
-        initImageView(view);
+        initView(view);
         setImageView(mPlayer.getID());
+        setTextView(mPlayer.getID());
         return view;
     }
 
-    private void initImageView(View view){
-        if(VDBG)Log.d(TAG,"initImageView: numberOfCards = "+mPlayer.getNumberOfCards());
+    private void initView(View view){
+        //imageView
+        if(VDBG)Log.d(TAG,"initView: numberOfCards = "+mPlayer.getNumberOfCards());
         mCardImageViews = new ArrayList<ImageView>();
         mCardImageViews.clear();
 
@@ -103,14 +101,17 @@ public class PlayerFragment extends Fragment {
             }
             mCardImageViews.add(iv);
         }
+        //textView
+        mText =  (TextView)view.findViewById(R.id.player_info_text);
     }
+
     private void setImageView(int index){
         if(DBG)Log.d(TAG,"setImageView: "+index);
         String wt = "c";
         Vector<Card> cards = mPlayer.getCards();
 
         if(index == 0){//player1
-            int margin_start = 30;
+            int margin_start = 40;
             int cnt = 0;
             if(DBG)Log.d(TAG,"setImageView: Player1 cardSize = "+cards.size());
             for(Card card: cards){
@@ -120,7 +121,7 @@ public class PlayerFragment extends Fragment {
                 if(DBG)Log.d(TAG,"setImageView: cnt = "+cnt);
                 ImageView imageView = mCardImageViews.get(cnt++);
                 params.setMarginStart(margin_start);
-                params.setMargins(0,0,0,30);
+                params.setMargins(0, 100, 0, 0);
                 imageView.setLayoutParams(params);
                 imageView.setImageResource(resID);
                 margin_start+=55;
@@ -133,28 +134,64 @@ public class PlayerFragment extends Fragment {
                 mCardImageViews.get(i).setImageResource(R.drawable.back);
                 ImageView imageView = mCardImageViews.get(i);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-                if(index == 1 || index == 3){
-                    params.setMargins(margin_left,margin_top,0,0);
+                if(index == 1){
+                    //imageView
+                    params.setMargins(margin_left, margin_top, 0, 0);//left,top,right,bottom
                     imageView.setRotation(90);
                     margin_top+=55;
                 }
                 else if(index == 2){
-                    params.setMargins(margin_left,margin_top,0,0);
+                    params.setMargins(margin_left, margin_top, 0, 0);
                     imageView.setRotation(180);
                     margin_left+=55;
                 }
-                /*else if(index == 3){
-                    params.setMargins(margin_left,margin_top,0,0);
-                    imageView.setRotation(90);
-                    margin_top+=55;
-                }*/
+                else if(index == 3){
+                    //imageView
+                    params.setMargins(150, margin_top, 0, 0);
+                    imageView.setRotation(270);
+                    margin_top+=56;
+                    //text
+
+                }
                 imageView.setLayoutParams(params);
             }
         }
     }
 
+    private void setTextView(int index){
+        FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,FrameLayout.LayoutParams.WRAP_CONTENT);
+        if(index == 0){
+            textParams.gravity = Gravity.TOP|Gravity.CENTER;
+            mText.setLayoutParams(textParams);
+        }else{
+            textParams = new FrameLayout.LayoutParams(500,300);
+            if(index == 1){
+                //textParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,300);
+                mText.setRotation(90);
+                textParams.setMargins(150, 0, 0, 0);//left,top,right,bottom
+                textParams.gravity=Gravity.CENTER;
+                mText.setGravity(Gravity.CENTER);
+            }else if(index == 2){
+                textParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,FrameLayout.LayoutParams.WRAP_CONTENT);
+                textParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
+            }else if(index == 3){
+                mText.setRotation(270);
+                textParams.setMargins(0, 0, 150, 0);
+                textParams.gravity=Gravity.CENTER;
+                mText.setGravity(Gravity.CENTER);
+            }
+            mText.setLayoutParams(textParams);
+        }
+        updatePlayerInfo("Player : "+mPlayer.getName());
+        //updatePlayerInfo("1:SPADE / 20000000");
+    }
+
     public void setPlayer(Player player){
         mPlayer = player;
+    }
+
+    public void updatePlayerInfo(String info){
+        mText.setText(info);
     }
 
     @Override
@@ -166,7 +203,6 @@ public class PlayerFragment extends Fragment {
             Log.d(TAG,"para1 = "+bundle.getString("kimmy"));
         }
     }
-
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

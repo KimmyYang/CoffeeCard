@@ -53,7 +53,11 @@ public class BridgeGameService extends Service {
                     mGame.initGame();
                     break;
                 case GameConstants.EVENT_SERVICE_BID_CONTRACT:
-                    ((BridgeGame)mGame).bidContract();
+                    try {
+                        bidContract();
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 default:
             }
@@ -76,5 +80,10 @@ public class BridgeGameService extends Service {
         // TODO: Return the communication channel to the service.
         return mMessenger.getBinder();
         //throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void bidContract() throws RemoteException {
+        ((BridgeGame)mGame).bidContract();
+        mClient.send(mHandler.obtainMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE));
     }
 }

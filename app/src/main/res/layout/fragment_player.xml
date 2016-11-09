@@ -3,6 +3,17 @@
     android:layout_height="match_parent" tools:context="com.kf.coffeecard.PlayerFragment">
 
     <!-- TODO: Update blank fragment layout -->
+    <FrameLayout
+        android:id="@+id/player_info_framelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left|top">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/player_info_text" />
+    </FrameLayout>
 
     <ImageView
         android:layout_width="wrap_content"
@@ -85,4 +96,6 @@
 
         android:clickable="true"/>
 
-    </FrameLayout>
+
+
+</FrameLayout>
