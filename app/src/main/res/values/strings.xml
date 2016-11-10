@@ -6,7 +6,8 @@
     <string name="title_activity_setting">SettingActivity</string>
     <string name="game_type">Game Type</string>
     <string name="num_of_player">Number of Player</string>
-    <string name="start_button">Start</string>
+    <string name="start_button">開始遊戲</string>
+    <string name="bid_contract">叫牌</string>
     <string name="pass_button">PASS</string>
     <string name="yes_button">確定</string>
     <string name="no_button">取消</string>

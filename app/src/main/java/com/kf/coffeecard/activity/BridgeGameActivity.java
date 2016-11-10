@@ -58,6 +58,8 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
     //use in call king dialog
     private Spinner mContractTrickSpinner = null;
     private Spinner mContractSuitSpinner = null;
+    private Button mGameButton = null;
+    private TextView mGameText = null;
 
     private Handler mHandler = new ClientHandler();
     private Game mGame = null;
@@ -83,7 +85,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
                     displayGame();
                     break;
                 case GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE:
-                    startGame();
+                    startBidContract();
                     break;
                 case GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE:
                     updatePlayerInfo();
@@ -92,7 +94,6 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             }
         }
     }
-
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -121,7 +122,6 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         Log.d(TAG,"onCreate");
         //init game, rule and player
         createGame(getIntent().getExtras());
-
         Intent intent = new Intent(this, BridgeGameService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
@@ -143,32 +143,44 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         mHandler.sendEmptyMessageDelayed(GameConstants.EVENT_CLIENT_DISPLAY_GAME_DONE, 1000);
     }
 
-    //show start button and starting the game
-    private void startGame(){
-        //init start button
-        Button startBtn = new Button(this);
-        startBtn.setText(R.string.start_button);
-        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.bridge_game_relative_layout);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(300,300);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
-        startBtn.setLayoutParams(params);
-        relativeLayout.addView(startBtn);
-
-        startBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showContractDialog();
-            }
-        });
-    }
-
     private void updatePlayerInfo(){
         for(PlayerFragment fragment:mPlayerFragList){
             fragment.updatePlayerInfoToView();
         }
-        if(!((BridgeGame)mGame).getContract().isPass){
-            showContractDialog();
+        if(((BridgeGame)mGame).getContractInfo().isPass){
+            mGameButton.setText(R.string.start_button);//start game
+        }else{
+            mGameButton.setText(R.string.bid_contract);//bid contract
         }
+        mGameText.setText(((BridgeGame)mGame).getContract());
+    }
+
+    //show start button and starting the game
+    private void startBidContract(){
+        //init game button
+        mGameButton = new Button(this);
+        mGameButton.setText(R.string.bid_contract);
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.bridge_game_relative_layout);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(350,150);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        mGameButton.setLayoutParams(params);
+        relativeLayout.addView(mGameButton);//button
+        mGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(DBG)Log.d(GameConstants.TAG,"mGameButton.getText() = "+mGameButton.getText());
+                if (mGameButton.getText().equals(R.string.bid_contract)) {
+                    showContractDialog();
+                } else if (mGameButton.getText().equals(R.string.start_button)) {
+                    //start game
+                }
+            }
+        });
+        //init game text
+        mGameText = new TextView(this);
+        params = new RelativeLayout.LayoutParams(400,150);
+        mGameText.setLayoutParams(params);
+        relativeLayout.addView(mGameText);//text
     }
 
     private void showContractDialog(){
@@ -183,9 +195,9 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             public void onClick(DialogInterface arg0, int arg1) {
                 if (DBG) Log.d(GameConstants.TAG, "YES");
                 Bundle bundle = new Bundle();
-                bundle.putInt(GameConstants.CONTRACT_SUIT,mMainPlayerContractInfo.Suit);
-                bundle.putInt(GameConstants.CONTRACT_TRICK,mMainPlayerContractInfo.Trick);
-                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT,(Object)bundle);
+                bundle.putInt(GameConstants.CONTRACT_SUIT, mMainPlayerContractInfo.Suit);
+                bundle.putInt(GameConstants.CONTRACT_TRICK, mMainPlayerContractInfo.Trick);
+                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT, (Object) bundle);
             }
         });
         contractDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
@@ -207,7 +219,6 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         });
         contractDialog.show();
     }
-
 
     private void updateContractSpinner(View view){
         Log.d(GameConstants.TAG,"updateContractSpinner");
@@ -259,21 +270,6 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             Log.d(TAG,"[initCardImageView] init player "+i+" done");
         }
         fragmentTransaction.commit();
-    }
-
-    private void initPlayerInfo(){
-        /*for(int index=0; index< mGame.getNumberOfPlayer(); ++index){
-            int resId = getResources().getIdentifier("player_info_text_"+(index+1), "id", getPackageName());
-            TextView textView = (TextView)findViewById(resId);
-            if(index == 1){
-                textView.setRotation(90);
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(500,300);
-                params.setMargins(50, 300, 0, 0);
-                params.gravity=Gravity.TOP|Gravity.CENTER;
-                textView.setLayoutParams(params);
-            }
-            mGame.initPlayerInfo(index,textView);
-        }*/
     }
 
     protected void onStart(){

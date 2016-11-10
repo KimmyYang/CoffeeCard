@@ -77,7 +77,6 @@ public class BridgeGame extends Game{
         WeightCalculated();
     }
 
-
     protected void Deal(){
         Log.i(TAG, "Dealing Cards ..");
         if(!mGameRule.IsGameRuleValid()){
@@ -246,8 +245,12 @@ public class BridgeGame extends Game{
         ++mPassCnt;
     }
 
-    public ContractInfo getContract(){
+    public ContractInfo getContractInfo(){
         return mContractInfo;
+    }
+
+    public String getContract(){
+        return "Contract : "+mContractInfo.Trick+"/"+mContractInfo.Suit;
     }
 
     public Player getMainPlayer(){
