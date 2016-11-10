@@ -15,4 +15,15 @@ public class ContractInfo {
         this.Suit = suit;
         this.isContractChange = true;
     }
+
+    public static String getContractFormat(ContractInfo contract){
+        if(contract.isPass)return GameConstants.CONTRACT_PASS;
+        String suit = Card.CardSuit.IndexToString(contract.Suit);
+        return Integer.toString(contract.Trick)+":"+ (suit!=null?suit:GameConstants.NO_KING);
+    }
+
+    public static String getMainContractFormat(ContractInfo contract){
+        String suit = Card.CardSuit.IndexToString(contract.Suit);
+        return Integer.toString(contract.Trick)+":"+ (suit!=null?suit:GameConstants.NO_KING);
+    }
 }

@@ -20,10 +20,19 @@ public abstract class Game {
         LIAR;
     }
 
+    public class GameState{
+        public final static int IDLE = 0;
+        public final static int BID_CONTRACT = 1;
+        public final static int GAME_START = 2;
+        public final static int GAME_END = 3;
+        public int state = IDLE;
+    }
+
     private static final String TAG = "Game";
     protected static Game mInstance = null;
     protected Player mPlayers[];
     protected GameRule mGameRule;
+    private GameState mState = null;
 
     public abstract void initGame();
     protected abstract void Deal();
@@ -34,6 +43,7 @@ public abstract class Game {
     public Game(GameRule rule , Player player[]) {
         mGameRule = rule;
         mPlayers = player;
+        mState = new GameState();
     }
 
     public static Game getGame(){
@@ -70,6 +80,14 @@ public abstract class Game {
 
     public int getPerPlayerOfCards(){
         return mGameRule.getPerPlayerOfCards();
+    }
+
+    public void setState(int state){
+        mState.state = state;
+    }
+
+    public int getState(){
+        return mState.state;
     }
 
     public Vector<Card> getMyCard(){

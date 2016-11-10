@@ -13,13 +13,9 @@ public class BridgeGamePlayer extends Player {
     //update self contract
     public void updateContract(int trick , int suit, boolean isPass){
         mContractInfo.updateContract(trick, suit, isPass);
-        updatePlayerInfo(getContractFormat());
+        updatePlayerInfo(ContractInfo.getContractFormat(mContractInfo));
     }
-    private String getContractFormat(){
-        if(mContractInfo.isPass)return GameConstants.CONTRACT_PASS;
-        String suit = Card.CardSuit.IndexToString(mContractInfo.Suit);
-        return Integer.toString(mContractInfo.Trick)+":"+ (suit!=null?suit:GameConstants.NO_KING);
-    }
+
     public ContractInfo getContractInfo(){
         return mContractInfo;
     }

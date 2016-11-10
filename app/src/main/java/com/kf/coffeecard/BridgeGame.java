@@ -201,6 +201,7 @@ public class BridgeGame extends Game{
             resetPassCnt();
         }
         else {
+            ((BridgeGamePlayer)getMainPlayer()).updateContract(trick, suit, true);
             increasePassCnt();
         }
         //update final contract
@@ -228,7 +229,7 @@ public class BridgeGame extends Game{
                                                            bundle.getInt(GameConstants.CONTRACT_SUIT),
                                                            bundle.getBoolean(GameConstants.CONTRACT_PASS));
 
-                Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+bundle.getInt(GameConstants.CONTRACT_TRICK)+","+bundle.getInt(GameConstants.CONTRACT_SUIT)+"]"+
+                if(VDBG)Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+bundle.getInt(GameConstants.CONTRACT_TRICK)+","+bundle.getInt(GameConstants.CONTRACT_SUIT)+"]"+
                 ", Pass = "+bundle.getBoolean(GameConstants.CONTRACT_PASS));
             }
             mContractInfo.isPass = (mPassCnt >= (mGameRule.getNumberOfPlayers()-1));
@@ -250,7 +251,7 @@ public class BridgeGame extends Game{
     }
 
     public String getContract(){
-        return "Contract : "+mContractInfo.Trick+"/"+mContractInfo.Suit;
+        return "Contract : ["+ContractInfo.getMainContractFormat(mContractInfo)+"]";
     }
 
     public Player getMainPlayer(){

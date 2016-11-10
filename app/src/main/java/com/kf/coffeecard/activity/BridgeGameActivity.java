@@ -6,13 +6,13 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.HandlerThread;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.Handler;
 import android.os.Message;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,10 +20,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ImageView;
-import android.view.Gravity;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -39,11 +36,9 @@ import com.kf.coffeecard.GameConstants;
 import com.kf.coffeecard.R;
 import com.kf.coffeecard.fragment.PlayerFragment;
 import com.kf.coffeecard.service.BridgeGameService;
-
-import org.w3c.dom.Text;
-
+import com.kf.coffeecard.Game.GameState;
 import java.util.ArrayList;
-import java.util.Objects;
+
 
 
 public class BridgeGameActivity extends Activity implements PlayerFragment.OnFragmentInteractionListener{
@@ -144,22 +139,28 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
     }
 
     private void updatePlayerInfo(){
+        String textTitle = "Contract : ";
+        Log.d(GameConstants.TAG,"updatePlayerInfo");
         for(PlayerFragment fragment:mPlayerFragList){
             fragment.updatePlayerInfoToView();
         }
         if(((BridgeGame)mGame).getContractInfo().isPass){
+            textTitle = "Final Contract : ";
+            mGame.setState(GameState.GAME_START);
             mGameButton.setText(R.string.start_button);//start game
         }else{
             mGameButton.setText(R.string.bid_contract);//bid contract
         }
-        mGameText.setText(((BridgeGame)mGame).getContract());
+        mGameText.setText(textTitle+ContractInfo.getMainContractFormat(((BridgeGame) mGame).getContractInfo()));
     }
 
     //show start button and starting the game
     private void startBidContract(){
+        mGame.setState(GameState.BID_CONTRACT);
         //init game button
         mGameButton = new Button(this);
         mGameButton.setText(R.string.bid_contract);
+        mGameButton.setId(View.generateViewId());
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.bridge_game_relative_layout);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(350,150);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -169,17 +170,21 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(View view) {
                 if(DBG)Log.d(GameConstants.TAG,"mGameButton.getText() = "+mGameButton.getText());
-                if (mGameButton.getText().equals(R.string.bid_contract)) {
+                if (mGame.getState() == GameState.BID_CONTRACT) {
                     showContractDialog();
-                } else if (mGameButton.getText().equals(R.string.start_button)) {
+                } else if (mGame.getState() == GameState.GAME_START) {
                     //start game
                 }
             }
         });
         //init game text
         mGameText = new TextView(this);
-        params = new RelativeLayout.LayoutParams(400,150);
+        params = new RelativeLayout.LayoutParams(500,150);
+        //put textView above the game button
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        params.addRule(RelativeLayout.ABOVE,mGameButton.getId());
         mGameText.setLayoutParams(params);
+        mGameText.setGravity(Gravity.CENTER);
         relativeLayout.addView(mGameText);//text
     }
 
