@@ -29,7 +29,7 @@ public class CardSet {
         }
         //printCardSet();
         if(mCardSet.size() != TOTAL_CARD){
-            Log.wtf(TAG,"CardSet number error");
+            Log.e(TAG,"CardSet number error");
         }
     }
     public Card DrawCard(int i ){return mCardSet.elementAt(i);}

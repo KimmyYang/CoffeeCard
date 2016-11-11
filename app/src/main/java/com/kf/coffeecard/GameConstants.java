@@ -19,6 +19,7 @@ public class GameConstants {
     public final static int EVENT_SERVICE_INIT_GAME = 3;
     public final static int EVENT_SERVICE_BID_CONTRACT = 4;
     public final static int EVENT_SERVICE_BID_CONTRACT_DONE = 5;
+    public final static int EVENT_SERVICE_START_GAME = 6;
 
     //client
     public final static int EVENT_CLIENT_DISPLAY_GAME = 100;

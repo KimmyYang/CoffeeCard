@@ -93,7 +93,7 @@ public class BridgeGame extends Game{
             cardSet.Shuffle();
             cardSets.add(cardSet);
         }
-        Log.d(TAG, "Deal: cardSetsSize = " + cardSets.size());
+        Log.d(GameConstants.TAG, "Deal: cardSetsSize = " + cardSets.size()+", numOfPlayer = "+numOfPlayer);
         for(int i=0;i<cardSets.size();++i){
             CardSet cardSet = cardSets.get(i);//tmp
 
@@ -198,6 +198,7 @@ public class BridgeGame extends Game{
         //update main player contract
         if(trick!=0 && suit!=0){
             ((BridgeGamePlayer)getMainPlayer()).updateContract(trick, suit, false);
+            mContractInfo.CallerID = getMainPlayer().getID();
             resetPassCnt();
         }
         else {
@@ -220,14 +221,15 @@ public class BridgeGame extends Game{
                 if(!bundle.getBoolean(GameConstants.CONTRACT_PASS)){//new contract
                     mContractInfo.updateContract(bundle.getInt(GameConstants.CONTRACT_TRICK),
                                                  bundle.getInt(GameConstants.CONTRACT_SUIT),false);
+                    mContractInfo.CallerID = player.getID();
                     resetPassCnt();
                 }else{
                     increasePassCnt();
                 }
                 //update self contract
                 ((BridgeGamePlayer) player).updateContract(bundle.getInt(GameConstants.CONTRACT_TRICK),
-                                                           bundle.getInt(GameConstants.CONTRACT_SUIT),
-                                                           bundle.getBoolean(GameConstants.CONTRACT_PASS));
+                        bundle.getInt(GameConstants.CONTRACT_SUIT),
+                        bundle.getBoolean(GameConstants.CONTRACT_PASS));
 
                 if(VDBG)Log.d(GameConstants.TAG,"bidContract: play["+player.getID()+"] contract = ["+bundle.getInt(GameConstants.CONTRACT_TRICK)+","+bundle.getInt(GameConstants.CONTRACT_SUIT)+"]"+
                 ", Pass = "+bundle.getBoolean(GameConstants.CONTRACT_PASS));

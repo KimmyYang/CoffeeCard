@@ -61,8 +61,11 @@ public class BridgeGameService extends Service {
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     } catch (NullPointerException ex){
-                        Log.w(TAG,"ex = "+ex.getMessage());
+                        Log.w(TAG, "ex = " + ex.getMessage());
                     }
+                    break;
+                case GameConstants.EVENT_SERVICE_START_GAME:
+                    //start game
                     break;
                 default:
             }

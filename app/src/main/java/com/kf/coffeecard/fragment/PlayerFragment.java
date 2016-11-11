@@ -37,7 +37,7 @@ public class PlayerFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     //
     private final boolean DBG = true;
-    private final boolean VDBG = true;
+    private final boolean VDBG = false;
     private static final String TAG = "PlayerFragment";
 
     // TODO: Rename and change types of parameters
@@ -106,19 +106,19 @@ public class PlayerFragment extends Fragment {
     }
 
     private void setImageView(int index){
-        if(DBG)Log.d(TAG,"setImageView: "+index);
+        if(VDBG)Log.d(GameConstants.TAG,"setImageView: "+index);
         String wt = "c";
         Vector<Card> cards = mPlayer.getCards();
 
         if(index == 0){//player1
             int margin_start = 40;
             int cnt = 0;
-            if(DBG)Log.d(TAG,"setImageView: Player1 cardSize = "+cards.size());
+            if(DBG)Log.d(GameConstants.TAG,"setImageView: Player1 cardSize = "+cards.size());
             for(Card card: cards){
                 int resID = getResources().getIdentifier(wt+card.getId(),"drawable",MainActivity.PACKAGE_NAME);
-                if(VDBG)Log.d(TAG,"card Name/card id/resID = "+(wt+card.getId())+"/"+card.getId()+"/"+resID);
+                if(VDBG)Log.d(GameConstants.TAG,"card Name/card id/resID = "+(wt+card.getId())+"/"+card.getId()+"/"+resID);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-                if(DBG)Log.d(TAG,"setImageView: cnt = "+cnt);
+                if(DBG)Log.d(GameConstants.TAG,"setImageView: cnt = "+cnt);
                 ImageView imageView = mCardImageViews.get(cnt++);
                 params.setMarginStart(margin_start);
                 params.setMargins(0, 100, 0, 0);

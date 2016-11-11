@@ -8,6 +8,7 @@ public class ContractInfo {
     public int Suit = 0;
     public boolean isContractChange = false;
     public boolean isPass = false;
+    public int CallerID = 0;//who decide the final contract
 
     public void updateContract(int trick, int suit, boolean isPass){
         this.isPass = isPass;

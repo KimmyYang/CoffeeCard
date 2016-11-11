@@ -140,7 +140,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
 
     private void updatePlayerInfo(){
         String textTitle = "Contract : ";
-        Log.d(GameConstants.TAG,"updatePlayerInfo");
+        Log.d(GameConstants.TAG, "updatePlayerInfo");
         for(PlayerFragment fragment:mPlayerFragList){
             fragment.updatePlayerInfoToView();
         }
@@ -151,7 +151,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         }else{
             mGameButton.setText(R.string.bid_contract);//bid contract
         }
-        mGameText.setText(textTitle+ContractInfo.getMainContractFormat(((BridgeGame) mGame).getContractInfo()));
+        mGameText.setText(textTitle + ContractInfo.getMainContractFormat(((BridgeGame) mGame).getContractInfo()));
     }
 
     //show start button and starting the game
@@ -169,11 +169,13 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         mGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(DBG)Log.d(GameConstants.TAG,"mGameButton.getText() = "+mGameButton.getText());
+                if (DBG)
+                    Log.d(GameConstants.TAG, "mGameButton.getText() = " + mGameButton.getText());
                 if (mGame.getState() == GameState.BID_CONTRACT) {
                     showContractDialog();
                 } else if (mGame.getState() == GameState.GAME_START) {
                     //start game
+                    startGame();
                 }
             }
         });
@@ -182,10 +184,21 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         params = new RelativeLayout.LayoutParams(500,150);
         //put textView above the game button
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
-        params.addRule(RelativeLayout.ABOVE,mGameButton.getId());
+        params.addRule(RelativeLayout.ABOVE, mGameButton.getId());
         mGameText.setLayoutParams(params);
         mGameText.setGravity(Gravity.CENTER);
         relativeLayout.addView(mGameText);//text
+    }
+
+    private void startGame(){
+        //arrange view
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.bridge_game_relative_layout);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mGameText.getLayoutParams();
+        params.removeRule(RelativeLayout.ABOVE);
+        mGameText.setLayoutParams(params);
+        relativeLayout.removeView(mGameButton);
+        //start game
+        sendMessage(GameConstants.EVENT_SERVICE_START_GAME);
     }
 
     private void showContractDialog(){
@@ -199,10 +212,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (DBG) Log.d(GameConstants.TAG, "YES");
-                Bundle bundle = new Bundle();
-                bundle.putInt(GameConstants.CONTRACT_SUIT, mMainPlayerContractInfo.Suit);
-                bundle.putInt(GameConstants.CONTRACT_TRICK, mMainPlayerContractInfo.Trick);
-                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT, (Object) bundle);
+                sendBidContractToService(mMainPlayerContractInfo.Trick, mMainPlayerContractInfo.Suit);
             }
         });
         contractDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
@@ -216,13 +226,17 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (VDBG) Log.d(GameConstants.TAG, "PASS");
-                Bundle bundle = new Bundle();
-                bundle.putInt(GameConstants.CONTRACT_SUIT,0);
-                bundle.putInt(GameConstants.CONTRACT_TRICK,0);
-                sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT,(Object)bundle);
+                sendBidContractToService(0,0);
             }
         });
         contractDialog.show();
+    }
+
+    private void sendBidContractToService(int trick, int suit){
+        Bundle bundle = new Bundle();
+        bundle.putInt(GameConstants.CONTRACT_SUIT, suit);
+        bundle.putInt(GameConstants.CONTRACT_TRICK, trick);
+        sendMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT, (Object) bundle);
     }
 
     private void updateContractSpinner(View view){
@@ -279,14 +293,23 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
 
     protected void onStart(){
         super.onStart();
-        Log.d(TAG,"onStart");
-        mSplashIv = (ImageView) findViewById(R.id.iv_bridge_game_splash);
-        mSplashIv.setImageResource(R.drawable.bridge_game_splash);
+        Log.d(TAG, "onStart");
+        if(mGame!=null && mGame.getState()== GameState.IDLE){
+            mSplashIv = (ImageView) findViewById(R.id.iv_bridge_game_splash);
+            mSplashIv.setImageResource(R.drawable.bridge_game_splash);
+        }
     }
 
     protected void onResume(){
         super.onResume();
-        Log.d(TAG,"onResume");
+        if(DBG)Log.d(GameConstants.TAG, "onResume");
+    }
+
+    protected void onStop(){
+        super.onStop();
+        if(DBG)Log.d(GameConstants.TAG, "onStop");
+        mGame = null;
+        mPlayerFragList.clear();
     }
 
     private void sendMessage(int what){
