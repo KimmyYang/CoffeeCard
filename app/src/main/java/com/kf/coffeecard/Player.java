@@ -1,5 +1,6 @@
 package com.kf.coffeecard;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -8,21 +9,24 @@ import java.util.Vector;
 public class Player {
     protected String mName;
     protected int mID;
-    protected Vector<Card> mCards = new Vector<Card>();
+    protected ArrayList<Card> mCards = new ArrayList<Card>();
     protected String mPlayerInfo;
     protected int mScore = GameRule.getGameScore();
     public final int NAME_INFO_FORMAT = 0;
     public final int SCORE_INFO_FORMAT = 1;
+    private Player mPartner = null;
+    protected ArrayList<Card> mPlayedList = null;//record the played card
 
     public Player(String name, int id){
         mName = name;
         mID = id;
+        mPlayedList = new ArrayList<Card>();
         updatePlayerInfo(NAME_INFO_FORMAT);
     }
     public String getName(){return mName;}
     public Integer getID(){return mID;}
     public void setCard(Card card){mCards.add(card);}
-    public Vector getCards(){return mCards;}
+    public ArrayList getCards(){return mCards;}
     public int getNumberOfCards(){return mCards.size();}
     public String getPlayerInfo(){return mPlayerInfo;}
     protected void updatePlayerInfo(int format){
@@ -38,5 +42,9 @@ public class Player {
     }
     protected void updatePlayerInfo(String info){
         mPlayerInfo = info;
+    }
+
+    public void setPartner(Player player){
+        mPartner = player;
     }
 }

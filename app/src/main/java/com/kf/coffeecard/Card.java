@@ -11,6 +11,7 @@ import java.util.Map;
 public class Card {
 
     public enum CardSuit{
+        INVALID(-1),
         CLUB(1),
         DIAMOND(2),
         HEART(3),
@@ -28,6 +29,15 @@ public class Card {
         }
         public int getValue(){
             return value;
+        }
+        public int compare(CardSuit suit){
+            if(value > suit.getValue()){
+                return 1;
+            }else if(value < suit.getValue()){
+                return -1;
+            }else {
+                return 0;
+            }
         }
         public static CardSuit valueOf(int index){
             return map.get(index);
@@ -48,6 +58,7 @@ public class Card {
         }
     }
     public enum CardPoint{
+        INVALID(-1),
         ACE(1),
         TWO(2),
         THREE(3),
@@ -72,6 +83,18 @@ public class Card {
         private CardPoint(int value){
             this.value = value;
         }
+        public int getValue(){
+            return value;
+        }
+        public int compare(CardPoint point){
+            if(value > point.getValue()){
+                return 1;
+            }else if(value < point.getValue()){
+                return -1;
+            }else {
+                return 0;
+            }
+        }
         public static CardPoint valueOf(int index){
             return map.get(index);
         }
@@ -94,8 +117,33 @@ public class Card {
         mPoint = CardPoint.valueOf(point);
         mId = id;
     }
+
+    public Card(int suit , int point){
+        mId = 0;
+        mSuit = CardSuit.valueOf(suit);
+        mPoint = CardPoint.valueOf(point);
+    }
+
+    public Card(){
+        resetCard();
+    }
+
+    public void resetCard(){
+        mId = 0;
+        mSuit = CardSuit.INVALID;
+        mPoint = CardPoint.INVALID;
+    }
+    public boolean isValid(){
+        if(mId ==0 || mSuit==CardSuit.INVALID ||
+                mPoint==CardPoint.INVALID)return false;
+        return true;
+    }
     public CardSuit getSuit(){return mSuit;}
     public CardPoint getPoint(){return mPoint;}
     public int getId(){return mId;}
+    public boolean isEquals(CardSuit suit, CardPoint point){
+        if(suit == mSuit && point == mPoint)return true;
+        return false;
+    }
     public void sort(){}
 }

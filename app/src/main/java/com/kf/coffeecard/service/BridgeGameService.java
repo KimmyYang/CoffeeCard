@@ -15,9 +15,9 @@ import android.util.Log;
 
 import com.kf.coffeecard.BridgeGame;
 import com.kf.coffeecard.Game;
+import com.kf.coffeecard.Card;
 import com.kf.coffeecard.GameConstants;
 
-import java.util.Objects;
 
 
 public class BridgeGameService extends Service {
@@ -38,7 +38,7 @@ public class BridgeGameService extends Service {
         }
         @Override
         public void handleMessage(Message msg) {
-            Log.d(GameConstants.TAG,"BridgeGameService: handleMessage = "+msg.what);
+            Log.d(GameConstants.TAG, "BridgeGameService: handleMessage = " + msg.what);
 
             switch (msg.what){
                 case GameConstants.EVENT_SERVICE_REGISTER:
@@ -66,6 +66,14 @@ public class BridgeGameService extends Service {
                     break;
                 case GameConstants.EVENT_SERVICE_START_GAME:
                     //start game
+                    Bundle bundle = (Bundle)msg.obj;
+                    try {
+                        //startGame(bundle);
+                    //}catch (RemoteException ex){
+
+                    }catch (NullPointerException ex){
+                        Log.w(TAG, "ex = " + ex.getMessage());
+                    }
                     break;
                 default:
             }
@@ -96,5 +104,15 @@ public class BridgeGameService extends Service {
 
         ((BridgeGame)mGame).bidContract(bundle.getInt(GameConstants.CONTRACT_TRICK),bundle.getInt(GameConstants.CONTRACT_SUIT));
         mClient.send(mHandler.obtainMessage(GameConstants.EVENT_SERVICE_BID_CONTRACT_DONE));
+    }
+
+    private void startGame(Bundle bundle){
+        if(bundle == null)throw new NullPointerException();
+        int id = bundle.getInt(GameConstants.PLAYER_ID);
+        Card card  = mGame.getCardSet().getCard(bundle.getInt(GameConstants.SUIT), bundle.getInt(GameConstants.POINT));
+        Card playCard = ((BridgeGame)mGame).playCard(id, card);
+        //send the playCard to activity
+
+        mGame.updatePlayList(id, card);
     }
 }

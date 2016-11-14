@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Vector;
 
@@ -32,18 +33,38 @@ public abstract class Game {
     protected static Game mInstance = null;
     protected Player mPlayers[];
     protected GameRule mGameRule;
-    private GameState mState = null;
+    protected GameState mState = null;
+    protected int mPlayID = 0;//which player id will play card now
+    protected ArrayList<Card> mPlayList = null;//play card in per round
+    protected CardSet mCardSet = null;
 
     public abstract void initGame();
     protected abstract void Deal();
     protected abstract void ArrangeCard();
     protected abstract void WeightCalculated();
     public abstract Player getMainPlayer();
+    public abstract void setPlayID(int id);
 
     public Game(GameRule rule , Player player[]) {
         mGameRule = rule;
         mPlayers = player;
         mState = new GameState();
+        initPlayList();
+    }
+
+    private void initPlayList(){
+        mPlayList = new ArrayList<Card>(mPlayers.length);//capacity
+        for(int i=0; i< mPlayers.length; ++i){
+            mPlayList.add(null);
+        }
+    }
+
+    public void updatePlayList(int id, Card card){
+        if(id >= mPlayList.size()){
+            Log.d(GameConstants.TAG,"updatePlayList: the id is of bound "+id);
+            return;
+        }
+        mPlayList.set(id, card);
     }
 
     public static Game getGame(){
@@ -57,6 +78,7 @@ public abstract class Game {
         if (index > GameType.values().length) return false;
         return true;
     }
+
     public GameRule getGameRule(){return mGameRule;}
     public Player[] getPlayers(){return mPlayers;}
     public int getNumberOfPlayer(){
@@ -90,7 +112,7 @@ public abstract class Game {
         return mState.state;
     }
 
-    public Vector<Card> getMyCard(){
+    public ArrayList<Card> getMyCard(){
         if(mPlayers.length > 0) {
             Player player = mPlayers[0];
             if(player!=null){
@@ -100,4 +122,11 @@ public abstract class Game {
         return null;
     }
 
+    public int getPlayID(){
+        return mPlayID;
+    }
+
+    public CardSet getCardSet(){
+        return mCardSet;
+    }
 }

@@ -12,6 +12,9 @@ public class GameConstants {
     public final static String CONTRACT_TRICK = "contract_trick";
     public final static String CONTRACT_SUIT = "contract_suit";
     public final static String NO_KING = "No King";
+    public final static String SUIT = "suit";
+    public final static String POINT = "point";
+    public final static String PLAYER_ID = "player_id";
 
     //service
     public final static int EVENT_SERVICE_REGISTER = 1;

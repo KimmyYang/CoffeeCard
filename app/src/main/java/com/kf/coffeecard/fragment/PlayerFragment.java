@@ -108,7 +108,7 @@ public class PlayerFragment extends Fragment {
     private void setImageView(int index){
         if(VDBG)Log.d(GameConstants.TAG,"setImageView: "+index);
         String wt = "c";
-        Vector<Card> cards = mPlayer.getCards();
+        ArrayList<Card> cards = mPlayer.getCards();
 
         if(index == 0){//player1
             int margin_start = 40;

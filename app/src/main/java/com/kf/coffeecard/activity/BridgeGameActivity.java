@@ -147,6 +147,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
         if(((BridgeGame)mGame).getContractInfo().isPass){
             textTitle = "Final Contract : ";
             mGame.setState(GameState.GAME_START);
+            mGame.setPlayID(((BridgeGame) mGame).getContractInfo().CallerID);
             mGameButton.setText(R.string.start_button);//start game
         }else{
             mGameButton.setText(R.string.bid_contract);//bid contract
@@ -226,7 +227,7 @@ public class BridgeGameActivity extends Activity implements PlayerFragment.OnFra
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 if (VDBG) Log.d(GameConstants.TAG, "PASS");
-                sendBidContractToService(0,0);
+                sendBidContractToService(0, 0);
             }
         });
         contractDialog.show();

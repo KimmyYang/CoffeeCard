@@ -44,7 +44,23 @@ public class BridgeGame extends Game{
         for(int i=1; i<numPlayers ; ++i){//1, 2, 3, ..numPlayers
             players[i] = new BridgeGamePlayer(Integer.toString(i), i);
         }
+        setPartner(players);
         return players;
+    }
+
+    /*
+    partner : player 0, 2  , partner : player 1, 3
+     */
+    private static void setPartner(Player[] players){
+        int partnerIndex = 0;
+        for(int i=0; i< players.length; ++i){
+            if(i < 2){//0,1
+                partnerIndex = i+2;
+            }else{//2,3
+                partnerIndex = i-2;
+            }
+            players[i].setPartner(players[partnerIndex]);
+        }
     }
 
     private BridgeGame(GameRule rule , Player players[]){
@@ -93,7 +109,8 @@ public class BridgeGame extends Game{
             cardSet.Shuffle();
             cardSets.add(cardSet);
         }
-        Log.d(GameConstants.TAG, "Deal: cardSetsSize = " + cardSets.size()+", numOfPlayer = "+numOfPlayer);
+
+        Log.d(GameConstants.TAG, "Deal: cardSetsSize = " + cardSets.size() + ", numOfPlayer = " + numOfPlayer);
         for(int i=0;i<cardSets.size();++i){
             CardSet cardSet = cardSets.get(i);//tmp
 
@@ -104,23 +121,24 @@ public class BridgeGame extends Game{
                 mPlayers[index].setCard(card);
             }
         }
+        mCardSet = cardSets.get(0);//just one card set only in bridge game
     }
 
     protected void ArrangeCard(){
-        Log.i(TAG,"Arranging Cards ..");
+        Log.i(TAG, "Arranging Cards ..");
         //TreeMap<Integer,Card> treeMap = new TreeMap<Integer,Card>();
         ArrayList<Card> cardList = new ArrayList<>();
         boolean matchSuit = false;
         for(int i=0;i < mPlayers.length; ++i){
         //for(int i=0;i < 1; ++i){
-            Vector<Card> cards = mPlayers[i].getCards();
+            ArrayList<Card> cards = mPlayers[i].getCards();
             //Log.d(TAG,"vector size = "+cards.size());
             cardList.clear();//init
             //printCard(cards);
             for(int j=0;j<cards.size();++j){
 
                 matchSuit = false;
-                Card card = cards.elementAt(j);
+                Card card = cards.get(j);
 
                 if(cardList.size() == 0)cardList.add(card);
                 else{
@@ -152,10 +170,11 @@ public class BridgeGame extends Game{
                 }
             }
             if(cards.size() != cardList.size()){
-                Log.wtf(TAG,"ArrangeCard : Vector size not equal to List size");
+                Log.e(TAG,"ArrangeCard : Vector size not equal to List size");
             }
             ArrangeByColor(cardList);
-            copyListToVector(cards, cardList);
+            //copyListToVector(cards, cardList);
+            cards = cardList;
             //printCard(cards);
         }
     }
@@ -166,7 +185,7 @@ public class BridgeGame extends Game{
             ((BridgeGameRule)mGameRule).weightCalculated(player);
         }
     }
-
+/*
     private void copyListToVector(Vector<Card> cardsVector, ArrayList<Card> cardsList){
         cardsVector.clear();
         for(int i=0;i<cardsList.size();++i){
@@ -174,7 +193,7 @@ public class BridgeGame extends Game{
             cardsVector.add(card);
         }
     }
-
+*/
     private void ArrangeByColor(ArrayList<Card> cardList){
 
         for(int index=0;index<cardList.size();++index){
@@ -252,8 +271,89 @@ public class BridgeGame extends Game{
         return mContractInfo;
     }
 
-    public String getContract(){
-        return "Contract : ["+ContractInfo.getMainContractFormat(mContractInfo)+"]";
+    /*
+    playerId : last player's id
+    card : playerId's play card
+     */
+    public Card playCard(int lastPlayerId, Card lastCard){
+        int playedCnt = 0;
+        //check in which case first ...
+        for(Card _card: mPlayList){
+            if(_card == null)continue;
+            ++playedCnt;
+        }
+        Card playCard = null;
+        //get the current player's cards
+        int currentPlayerId = lastPlayerId+1;
+        if(lastPlayerId == 3) currentPlayerId = 0;
+
+        if(playedCnt == 0){//playerId is the first play in this round
+            playCard = firstPlay(currentPlayerId);
+        }else if(playedCnt == 1){//..
+            playCard = secondPlay(currentPlayerId, lastCard);
+        }else if(playedCnt == 2){//..
+
+        }else if(playedCnt == 3){//playerId is the last play in this round
+
+        }else {
+
+        }
+        return playCard;
+    }
+
+    private Card firstPlay(int currentPlayerId){
+        ArrayList<Card> cards = mPlayers[currentPlayerId].getCards();
+
+        CardSuit minSuit = ((BridgeGameRule) mGameRule).getMinSuitWeightByID(currentPlayerId);
+        CardPoint _point = CardPoint.INVALID;//init
+        Card playCard = null;
+        for(Card card: cards){
+            if(card.getSuit() == minSuit){
+                if(card.getPoint().compare(CardPoint.ACE) == 0){//win one trick first
+                    playCard = card;
+                    break;
+                }
+                //get the smallest point
+                if(_point.compare(CardPoint.INVALID)==0 || _point.compare(card.getPoint()) == 1){
+                    _point = card.getPoint();
+                    playCard = card;
+                }
+            }
+        }
+        return playCard;
+    }
+
+    private Card secondPlay(int currentPlayerId, Card lastCard){
+        Card playCard = null;
+        if(mContractInfo.Suit == lastCard.getSuit().getValue()){//king..
+
+        }else{
+            Card maxCard = mGameRule.getMaxCardBySuit(lastCard.getSuit(), mPlayers[currentPlayerId]);
+            Card minCard = mGameRule.getMinCardBySuit(lastCard.getSuit(), mPlayers[currentPlayerId]);
+            if(maxCard!=null && maxCard.getPoint().compare(lastCard.getPoint()) == -1){
+                playCard = minCard;
+            }else{
+                playCard = mGameRule.getBiggerCard(lastCard, mPlayers[currentPlayerId]);
+            }
+        }
+        if(playCard == null){//no any same suit card
+            CardSuit minSuit = ((BridgeGameRule) mGameRule).getMinSuitWeightByID(currentPlayerId);
+            playCard = mGameRule.getMinCardBySuit(minSuit,mPlayers[currentPlayerId]);
+        }
+        return playCard;
+    }
+
+    /*
+    input : contract caller id
+    playId : contract caller id's next player
+    ex. id=0, playerId=1 ..
+     */
+    public void setPlayID(int id){
+        int playId = id+1;
+        if(playId >= getPlayers().length){
+            playId = 0;
+        }
+        mPlayID = playId;
     }
 
     public Player getMainPlayer(){
@@ -282,11 +382,11 @@ public class BridgeGame extends Game{
     }
 
     //test
-    public static void printCard(Vector<Card> cards){
+    public static void printCard(ArrayList<Card> cards){
         if(cards.size()==0)return;
         Log.d(TAG, "printCard : ");
         for(int i=0;i<cards.size();++i){
-            Card card = cards.elementAt(i);
+            Card card = cards.get(i);
             Log.d(GameConstants.TAG,"point/suit = "+card.getPoint()+"/"+card.getSuit());
         }
     }

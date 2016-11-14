@@ -3,12 +3,7 @@ package com.kf.coffeecard;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
-
 import android.os.Bundle;
-import android.os.DropBoxManager;
 import android.util.Log;
 
 /**
@@ -31,7 +26,7 @@ public class BridgeGameRule extends GameRule {
 
     public void weightCalculated(Player player){
         ArrayList<Integer> weightList = new ArrayList<Integer>(Collections.nCopies(Card.CARD_SUIT_COUNT, 0));//init to 0
-        Vector<Card> cards =  player.getCards();
+        ArrayList<Card> cards =  player.getCards();
         for(Card card:cards) {
             int index = card.getSuit().getValue()-1;
             weightList.set(index, weightList.get(index)+getCardWeight(card.getPoint()));
@@ -109,6 +104,86 @@ public class BridgeGameRule extends GameRule {
         }else{
             return BASIC_WEIGHT;
         }
+    }
+
+    public Card.CardSuit getMinSuitWeightByID(int playerId){
+        ArrayList<Integer> weightList = mWeightMap.get(playerId);
+        int minSuit = 0; int weight = weightList.get(0);
+        for(int i=1; i<weightList.size();++i){
+            int _weight = weightList.get(i);
+            if(_weight == 0){
+                continue;
+            }
+            else if(_weight < weight){
+                minSuit = i;
+                weight = weightList.get(i);
+            }
+        }
+        return Card.CardSuit.valueOf(minSuit);
+    }
+
+    public Card getMaxCardBySuit(Card.CardSuit suit, Player player){
+        ArrayList<Card> cards = player.getCards();
+        int maxPoint = 0;
+        Card maxCard = null;
+        for(Card card: cards){
+            if(card.getSuit().compare(suit) == 0){
+                if(card.getPoint().compare(Card.CardPoint.ACE) == 0){//ace is the biggest
+                    maxCard = card;
+                    break;
+                }
+                else if(maxCard==null || card.getPoint().getValue() > maxPoint ){
+                    maxCard = card;
+                    maxPoint = card.getPoint().getValue();
+                }
+            }
+        }
+        return maxCard;
+    }
+
+    public Card getMinCardBySuit(Card.CardSuit suit, Player player){
+        ArrayList<Card> cards = player.getCards();
+        int minPoint = 0;
+        Card minCard = null;
+        for(Card card: cards){
+            if(card.getSuit().compare(suit) == 0){
+                if(minCard==null ||
+                 (card.getPoint().getValue() < minPoint && card.getPoint().compare(Card.CardPoint.ACE)!=0)){//not ace
+                    minCard = card;
+                    minPoint = card.getPoint().getValue();
+                }
+            }
+        }
+        return minCard;
+    }
+
+    /*
+    get the biggest card
+    ex. cards = 3,7,1,5  , _card = 4 , biggerCard = 5
+     */
+    public Card getBiggerCard(Card _card, Player player){
+        ArrayList<Card> cards = player.getCards();
+        int biggerPoint = 0;
+        Card biggerCard = null;
+        if(_card.getPoint().compare(Card.CardPoint.ACE) == 0)return null;//no bigger card
+
+        for(Card card: cards){
+            if(card.getSuit().compare(_card.getSuit()) == 0){
+                if(biggerCard == null){
+                    biggerCard = card;
+                    biggerPoint = card.getPoint().getValue();
+                    continue;
+                }
+                if(card.getPoint().compare(_card.getPoint()) > 0){
+                    //just get the bigger card, not biggest card
+                    if(card.getPoint().getValue() < biggerPoint ){
+                        biggerCard = card;
+                        biggerPoint = card.getPoint().getValue();
+                    }
+                }
+            }
+        }
+        return biggerCard;
     }
 
     private void printWeight(ArrayList<Integer> weightList){

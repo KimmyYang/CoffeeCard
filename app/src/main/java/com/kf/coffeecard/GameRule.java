@@ -7,7 +7,7 @@ package com.kf.coffeecard;
  */
 import com.kf.coffeecard.Game.GameType;
 
-public class GameRule {
+public abstract class GameRule {
 
     private int mNumberOfPlayerMin;
     private int mNumberOfPlayerMax;
@@ -19,6 +19,11 @@ public class GameRule {
 
     final static int DEFAULT_GAME_SCORE = 20000;
     private static int GAME_SCORE = DEFAULT_GAME_SCORE;
+
+    //abstract class
+    public abstract Card getMaxCardBySuit(Card.CardSuit suit, Player player);
+    public abstract Card getMinCardBySuit(Card.CardSuit suit, Player player);
+    public abstract Card getBiggerCard(Card _card, Player player);
 
     public GameRule(String name, GameType type, int numPlayerMin, int numPlayerMax, int numCardSet){
         //mName = name;
